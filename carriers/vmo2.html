@@ -1,0 +1,328 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Virgin Media O2 — Executive Financial Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-3.0.0.min.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e1a;--card:#111827;--accent:#D0021B;
+  --text:#f1f5f9;--muted:#94a3b8;--grid:#1e2940;
+  --grn:#22c55e;--red:#ef4444;--ylw:#f59e0b;--blu:#3b82f6;--tea:#14b8a6;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;font-size:14px}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,14,26,0.95);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--grid);display:flex;align-items:center;
+  padding:0 24px;height:52px;gap:4px;overflow-x:auto}
+.nav-brand{font-weight:700;font-size:15px;color:var(--accent);margin-right:16px;white-space:nowrap;letter-spacing:-0.3px}
+.nav-home{color:var(--muted);text-decoration:none;font-size:11px;padding:4px 8px;border-radius:5px;white-space:nowrap}
+.nav-home:hover{color:var(--text);background:var(--grid)}
+nav a{color:var(--muted);text-decoration:none;font-size:12px;font-weight:500;
+  padding:6px 12px;border-radius:6px;white-space:nowrap;transition:all .2s}
+nav a:hover{color:var(--text);background:var(--grid)}
+.nav-print{margin-left:auto;background:var(--accent);color:white;border:none;
+  padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;
+  white-space:nowrap;transition:opacity .2s}
+.nav-print:hover{opacity:0.85}
+.hero{background:linear-gradient(135deg,#111827 0%,#1a0a14 60%,#0a0e1a 100%);
+  border-bottom:1px solid var(--grid);padding:36px 32px 28px}
+.hero-badge{display:inline-block;background:var(--accent);color:white;font-size:10px;
+  font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;
+  border-radius:4px;margin-bottom:12px}
+.hero h1{font-size:28px;font-weight:700;letter-spacing:-0.5px}
+.hero h1 span{color:var(--accent)}
+.hero-meta{margin-top:8px;color:var(--muted);font-size:12px;display:flex;gap:24px;flex-wrap:wrap}
+.hero-meta strong{color:var(--text)}
+.section{padding:32px 24px;border-bottom:1px solid var(--grid)}
+.section-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px;
+  display:flex;align-items:center;gap:10px}
+.section-title .dot{width:4px;height:20px;background:var(--accent);border-radius:2px}
+.section-sub{color:var(--muted);font-size:12px;margin-bottom:20px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:12px;margin-bottom:8px}
+.kpi-card{background:var(--card);border:1px solid var(--grid);border-radius:10px;
+  padding:16px;transition:border-color .2s}
+.kpi-card:hover{border-color:var(--accent)}
+.kpi-label{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:700;letter-spacing:-0.5px}
+.kpi-delta{font-size:11px;font-weight:600;margin-top:4px}
+.chart-wrap{background:var(--card);border:1px solid var(--grid);border-radius:12px;
+  padding:4px;overflow:hidden;margin-bottom:16px}
+.chart-wrap .chart-note{padding:6px 16px 10px;font-size:10px;color:var(--muted);font-style:italic}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.chart-grid-2{grid-template-columns:1fr}}
+.chart-placeholder{background:var(--card);border:1px dashed var(--grid);border-radius:12px;
+  padding:32px;color:var(--muted);text-align:center;font-size:13px}
+.init-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.init-card{background:var(--card);border-radius:10px;padding:18px;border:1px solid var(--grid);transition:border-color .2s}
+.init-card:hover{border-color:var(--accent)}
+.init-header{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.init-icon{font-size:24px;line-height:1;flex-shrink:0}
+.init-title{font-size:14px;font-weight:700}
+.init-subtitle{font-size:11px;color:var(--muted);margin-top:2px}
+.init-bullets{font-size:12px;color:var(--muted);padding-left:18px}
+.init-bullets li{margin-bottom:4px}
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.guide-card{background:var(--card);border-radius:10px;padding:18px;border:1px solid var(--grid)}
+.guide-label{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:8px}
+.guide-value{font-size:20px;font-weight:700;letter-spacing:-0.5px}
+.guide-note{font-size:11px;color:var(--muted);margin-top:6px}
+.est-note{background:var(--card);border:1px solid rgba(245,158,11,0.25);border-radius:8px;
+  padding:10px 16px;font-size:11px;color:var(--muted);margin-bottom:16px}
+.est-note strong{color:#f59e0b}
+footer{padding:24px 32px;color:var(--muted);font-size:11px;border-top:1px solid var(--grid);line-height:1.7}
+footer a{color:var(--accent);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media print{
+  body{background:white;color:#111}
+  nav,.nav-print{display:none!important}
+  .hero{background:#f8f8f8;border-bottom:2px solid var(--accent)}
+  .kpi-card,.init-card,.guide-card,.chart-wrap{background:white;border-color:#ddd;break-inside:avoid}
+  .section{break-inside:avoid}
+}
+</style>
+
+</head>
+<body>
+<nav>
+  <span class="nav-brand">🇬🇧 Virgin Media O2</span>
+  <a class="nav-home" href="../index.html">⟵ All Carriers</a>
+  <a href="#kpis">KPIs</a><a href="#revenue">Revenue</a><a href="#financials">Financials</a><a href="#network">Network</a><a href="#subscribers">Subscribers</a><a href="#outlook">Outlook</a>
+  <button class="nav-print" onclick="window.print()">⬇ Print / Save PDF</button>
+</nav>
+<div class="hero">
+  <div class="hero-badge">Executive Strategy Brief</div>
+  <h1>Virgin Media O2 <span>(Private JV)</span> — Financial Dashboard</h1>
+  <div class="hero-meta">
+    <span><strong>Latest Quarter:</strong> Q2 2025</span>
+    <span><strong>Stock Period:</strong> N/A</span>
+    <span><strong>Lens:</strong> Network Domain · 5G · Broadband · AI/Software</span>
+    <span><strong>Generated:</strong> April 16, 2026  17:48</span>
+    <span><strong>Sources:</strong> Virgin Media O2 IR · SEC EDGAR · Yahoo Finance</span>
+  </div>
+</div>
+
+<div class="section" id="kpis">
+  <div class="section-title"><span class="dot"></span>Q2 2025 Key Performance Indicators</div>
+  <div class="section-sub">Q2 2025 vs Q2 2024. Source: VMO2 quarterly press release / Liberty Global Q2 2025 results.</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value">£2.5B</div>
+      <div class="kpi-delta" style="color:#ef4444">
+        ▼ 5.2% vs prior year Q
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Adj. EBITDA</div>
+      <div class="kpi-value">£0.9B</div>
+      <div class="kpi-delta" style="color:#ef4444">
+        ▼ 5.1% vs prior year Q
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">CapEx</div>
+      <div class="kpi-value">£0.5B</div>
+      <div class="kpi-delta" style="color:#ef4444">
+        ▲ 6.0% vs prior year Q
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">O2 Mobile Connections</div>
+      <div class="kpi-value">23.1M</div>
+      <div class="kpi-delta" style="color:#ef4444">
+        ▼ 0.0% vs prior year Q
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">VM Broadband Subs</div>
+      <div class="kpi-value">5.6M</div>
+      <div class="kpi-delta" style="color:#ef4444">
+        ▼ 1.9% vs prior year Q
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">5G Coverage (UK Pop.)</div>
+      <div class="kpi-value">87.00%</div>
+      <div class="kpi-delta" style="color:#22c55e">
+        ▲ 16.0% vs prior year Q
+      </div>
+    </div></div>
+  <div class="est-note">
+    <strong>Private JV:</strong> Virgin Media O2 is a private joint venture (Liberty Global 50% + Telefónica 50%, formed June 2021).
+    Financials reported quarterly via Liberty Global IR. Values in GBP. Approx. USD equiv. at £1 = $1.27 noted in footer.
+  </div>
+</div>
+
+<div class="section" id="revenue">
+  <div class="section-title"><span class="dot"></span>Revenue & EBITDA Margin</div>
+  <div class="section-sub">Quarterly revenue trend FY2024–FY2025 (Q2 2025 is latest available). Lighter bars = FY2025.</div>
+  <div class="chart-wrap">
+    <div>                            <div id="vmo2_chart_revenue" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("vmo2_chart_revenue")) {                    Plotly.newPlot(                        "vmo2_chart_revenue",                        [{"cliponaxis":false,"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eRevenue: \u00a3%{y:.2f}B\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":["#D0021B","#D0021B","#D0021B","#D0021B","rgba(208,2,27,0.55)","rgba(208,2,27,0.55)"]},"name":"Total Revenue (\u00a3B)","text":["\u00a32.67B","\u00a32.67B","\u00a32.63B","\u00a32.72B","\u00a32.59B","\u00a32.53B"],"textfont":{"color":"#f1f5f9","size":10},"textposition":"outside","x":["Q1'24","Q2'24","Q3'24","Q4'24","Q1'25","Q2'25"],"y":[2.67,2.67,2.63,2.72,2.59,2.53],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eEBITDA Margin: %{y:.1f}%\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#14b8a6","dash":"dot","width":2.5},"marker":{"color":"#14b8a6","size":7},"mode":"lines+markers","name":"EBITDA Margin %","x":["Q1'24","Q2'24","Q3'24","Q4'24","Q1'25","Q2'25"],"y":[37.5,37.1,37.3,37.1,36.7,37.2],"type":"scatter","xaxis":"x","yaxis":"y2"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,0.94],"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","title":{"text":"GBP Billions"},"tickprefix":"\u00a3"},"yaxis2":{"anchor":"x","overlaying":"y","side":"right","tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","title":{"text":"EBITDA Margin %"},"ticksuffix":"%","range":[30,45],"showgrid":false},"font":{"color":"#f1f5f9","family":"'Inter','Segoe UI',Arial,sans-serif","size":12},"title":{"font":{"size":14,"color":"#f1f5f9"},"text":"Quarterly Revenue & EBITDA Margin","x":0.01,"xanchor":"left"},"margin":{"l":65,"r":50,"t":65,"b":50},"legend":{"font":{"size":11},"bgcolor":"rgba(0,0,0,0)","bordercolor":"#1e2940","borderwidth":1},"hoverlabel":{"font":{"size":12,"family":"'Inter',Arial,sans-serif"},"bgcolor":"#1e293b"},"paper_bgcolor":"#111827","plot_bgcolor":"#111827","shapes":[{"fillcolor":"#D0021B","line":{"width":0},"opacity":0.07,"type":"rect","x0":"Q1'25","x1":"Q2'25","xref":"x","y0":0,"y1":1,"yref":"y domain"}],"annotations":[{"font":{"color":"#D0021B","size":10},"showarrow":false,"text":"Latest","x":"Q2'25","xref":"x","y":2.9920000000000004,"yref":"y"}]},                        {"displayModeBar": true, "displaylogo": false, "modeBarButtonsToRemove": ["select2d", "lasso2d"], "responsive": true}                    )                };            </script>        </div>
+    <div class="chart-note">Source: Liberty Global quarterly results / VMO2 press releases. All values in GBP billions.</div>
+  </div>
+</div>
+
+<div class="section" id="financials">
+  <div class="section-title"><span class="dot"></span>Annual Financial Performance</div>
+  <div class="section-sub">FY2023–FY2025 actuals. EBITDA margin annotated above bars. FCF decline in FY2025 driven by Daisy transaction financing.</div>
+  <div class="chart-grid-2">
+    <div class="chart-wrap">
+      <div>                            <div id="vmo2_chart_annual" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("vmo2_chart_annual")) {                    Plotly.newPlot(                        "vmo2_chart_annual",                        [{"cliponaxis":false,"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eEBITDA: \u00a3%{y:.2f}B\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#D0021B"},"name":"Adj. EBITDA","text":["\u00a34.06B","\u00a33.98B","\u00a33.89B"],"textfont":{"color":"#f1f5f9","size":10},"textposition":"outside","x":["FY2023","FY2024","FY2025"],"y":[4.06,3.98,3.89],"type":"bar"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eFCF: \u00a3%{y:.2f}B\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#22c55e"},"name":"Adj. FCF","text":["\u00a30.72B","\u00a30.67B","\u00a30.39B"],"textfont":{"color":"#f1f5f9","size":10},"textposition":"outside","x":["FY2023","FY2024","FY2025"],"y":[0.72,0.67,0.39],"type":"bar"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eCapEx: \u00a3%{y:.2f}B\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#f97316"},"name":"CapEx","text":["\u00a32.00B","\u00a32.00B","\u00a32.10B"],"textfont":{"color":"#f1f5f9","size":10},"textposition":"outside","x":["FY2023","FY2024","FY2025"],"y":[2.0,2.0,2.1],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"font":{"color":"#f1f5f9","family":"'Inter','Segoe UI',Arial,sans-serif","size":12},"title":{"font":{"size":14,"color":"#f1f5f9"},"text":"Annual Financial Performance (GBP)","x":0.01,"xanchor":"left"},"margin":{"l":65,"r":50,"t":65,"b":50},"legend":{"font":{"size":11},"bgcolor":"rgba(0,0,0,0)","bordercolor":"#1e2940","borderwidth":1},"hoverlabel":{"font":{"size":12,"family":"'Inter',Arial,sans-serif"},"bgcolor":"#1e293b"},"paper_bgcolor":"#111827","plot_bgcolor":"#111827","barmode":"group","xaxis":{"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940"},"yaxis":{"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","title":{"text":"GBP Billions"},"tickprefix":"\u00a3","range":[0,5.5]},"annotations":[{"font":{"color":"#14b8a6","size":9},"showarrow":false,"text":"37.2%","x":"FY2023","xref":"x","y":4.359999999999999,"yref":"y"},{"font":{"color":"#14b8a6","size":9},"showarrow":false,"text":"37.3%","x":"FY2024","xref":"x","y":4.28,"yref":"y"},{"font":{"color":"#14b8a6","size":9},"showarrow":false,"text":"37.3%","x":"FY2025","xref":"x","y":4.19,"yref":"y"},{"arrowcolor":"#f59e0b","arrowhead":2,"bgcolor":"#111827","bordercolor":"#f59e0b","borderwidth":1,"font":{"color":"#f59e0b","size":9},"showarrow":true,"text":"FCF impacted by\u003cbr\u003eDaisy transaction\u003cbr\u003efinancing requirements","x":"FY2025","y":1.2}]},                        {"displayModeBar": true, "displaylogo": false, "modeBarButtonsToRemove": ["select2d", "lasso2d"], "responsive": true}                    )                };            </script>        </div>
+      <div class="chart-note">FCF pressure in FY2025 (£0.39B vs £0.67B) reflects Daisy financing requirements; FY2026 guided at ~£200M.</div>
+    </div>
+    <div class="chart-wrap">
+      <div>                            <div id="vmo2_chart_5g" class="plotly-graph-div" style="height:300px; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("vmo2_chart_5g")) {                    Plotly.newPlot(                        "vmo2_chart_5g",                        [{"cliponaxis":false,"hovertemplate":"\u003cb\u003eFY2023\u003c\u002fb\u003e\u003cbr\u003e5G Coverage: 60%\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#f97316"},"name":"FY2023","showlegend":false,"text":["60%"],"textfont":{"color":"#f1f5f9","size":11},"textposition":"outside","x":["FY2023"],"y":[60],"type":"bar","xaxis":"x","yaxis":"y"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003eFY2024\u003c\u002fb\u003e\u003cbr\u003e5G Coverage: 75%\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#f59e0b"},"name":"FY2024","showlegend":false,"text":["75%"],"textfont":{"color":"#f1f5f9","size":11},"textposition":"outside","x":["FY2024"],"y":[75],"type":"bar","xaxis":"x","yaxis":"y"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003eFY2025\u003c\u002fb\u003e\u003cbr\u003e5G Coverage: 87%\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#D0021B"},"name":"FY2025","showlegend":false,"text":["87%"],"textfont":{"color":"#f1f5f9","size":11},"textposition":"outside","x":["FY2025"],"y":[87],"type":"bar","xaxis":"x","yaxis":"y"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003eFY2023\u003c\u002fb\u003e\u003cbr\u003eFiber premises: 5.8M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#f97316"},"name":"FY2023","showlegend":false,"text":["5.8M"],"textfont":{"color":"#f1f5f9","size":11},"textposition":"outside","x":["FY2023"],"y":[5.8],"type":"bar","xaxis":"x2","yaxis":"y2"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003eFY2024\u003c\u002fb\u003e\u003cbr\u003eFiber premises: 6.9M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#f59e0b"},"name":"FY2024","showlegend":false,"text":["6.9M"],"textfont":{"color":"#f1f5f9","size":11},"textposition":"outside","x":["FY2024"],"y":[6.9],"type":"bar","xaxis":"x2","yaxis":"y2"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003eFY2025\u003c\u002fb\u003e\u003cbr\u003eFiber premises: 8.3M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#D0021B"},"name":"FY2025","showlegend":false,"text":["8.3M"],"textfont":{"color":"#f1f5f9","size":11},"textposition":"outside","x":["FY2025"],"y":[8.3],"type":"bar","xaxis":"x2","yaxis":"y2"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,0.49500000000000005],"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","range":[0,115],"ticksuffix":"%"},"xaxis2":{"anchor":"y2","domain":[0.5950000000000001,1.0],"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940"},"yaxis2":{"anchor":"x2","domain":[0.0,1.0],"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","range":[0,11],"ticksuffix":"M"},"annotations":[{"font":{"size":16},"showarrow":false,"text":"5G Population Coverage (%)","x":0.24750000000000003,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"},{"font":{"size":16},"showarrow":false,"text":"Full-Fiber Premises (M homes)","x":0.7975000000000001,"xanchor":"center","xref":"paper","y":1.0,"yanchor":"bottom","yref":"paper"}],"font":{"color":"#f1f5f9","family":"'Inter','Segoe UI',Arial,sans-serif","size":12},"title":{"font":{"size":14,"color":"#f1f5f9"},"text":"5G Coverage & Fiber Footprint Expansion","x":0.01,"xanchor":"left"},"margin":{"l":65,"r":50,"t":65,"b":50},"legend":{"font":{"size":11},"bgcolor":"rgba(0,0,0,0)","bordercolor":"#1e2940","borderwidth":1},"hoverlabel":{"font":{"size":12,"family":"'Inter',Arial,sans-serif"},"bgcolor":"#1e293b"},"paper_bgcolor":"#111827","plot_bgcolor":"#111827","height":300,"barmode":"group"},                        {"displayModeBar": true, "displaylogo": false, "modeBarButtonsToRemove": ["select2d", "lasso2d"], "responsive": true}                    )                };            </script>        </div>
+      <div class="chart-note">5G coverage +12pp to 87% in FY2025. Full-fiber footprint expanded to 8.3M homes (+1.4M YoY).</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="network">
+  <div class="section-title"><span class="dot"></span>Network Domain — 5G, Fiber & Strategic Initiatives</div>
+  <div class="section-sub">UK's only national converged operator — O2 mobile + Virgin Media cable/fiber. Network investment focus: 5G densification and full-fiber upgrade.</div>
+  <div class="init-grid">
+    <div class="init-card" style="border-left:3px solid #D0021B">
+      <div class="init-header">
+        <span class="init-icon" style="color:#D0021B">📡</span>
+        <div>
+          <div class="init-title">5G Network Expansion</div>
+          <div class="init-subtitle">O2 network — 87% UK pop coverage (2025)</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>87% UK population 5G coverage achieved FY2025 (+12pp YoY)</li><li>O2 operates the UK's most widely deployed 5G network</li><li>5G Standalone (SA) core deployment underway</li><li>Network sharing with Vodafone UK (CTIL) maximises coverage</li></ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #3b82f6">
+      <div class="init-header">
+        <span class="init-icon" style="color:#3b82f6">🔵</span>
+        <div>
+          <div class="init-title">Full-Fiber Acceleration</div>
+          <div class="init-subtitle">Virgin Media next-gen network build</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>8.3M full-fiber premises passed by end FY2025</li><li>+1.4M homes passed YoY — fastest expansion rate</li><li>Target: cover all 17M VM cable homes with fiber</li><li>Gigabit speeds on upgraded HFC and FTTP</li></ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #14b8a6">
+      <div class="init-header">
+        <span class="init-icon" style="color:#14b8a6">📱</span>
+        <div>
+          <div class="init-title">O2 Mobile Strategy</div>
+          <div class="init-subtitle">UK's largest mobile network by connections</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>23M+ mobile connections including MVNO base</li><li>O2 Priority perks platform drives loyalty and ARPU</li><li>Business segment: enterprise 5G and IoT growing</li><li>MVNO partnerships (Sky, Tesco, Lycamobile) add scale</li></ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #22c55e">
+      <div class="init-header">
+        <span class="init-icon" style="color:#22c55e">🏠</span>
+        <div>
+          <div class="init-title">Convergence (Fixed + Mobile)</div>
+          <div class="init-subtitle">UK's leading converged operator</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>Only UK operator with national cable broadband + mobile</li><li>Volt bundle (VM broadband + O2 mobile) — key differentiator</li><li>Convergence drives lower churn vs. single-play</li><li>Cross-sell penetration growing in both subscriber bases</li></ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #f97316">
+      <div class="init-header">
+        <span class="init-icon" style="color:#f97316">🤖</span>
+        <div>
+          <div class="init-title">AI & Network Automation</div>
+          <div class="init-subtitle">Smart operations and customer experience</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>AI-powered network fault detection and self-healing</li><li>Virtual assistant (Aura) handling customer care</li><li>Dynamic network management reducing manual intervention</li><li>Predictive CapEx allocation based on demand signals</li></ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #f59e0b">
+      <div class="init-header">
+        <span class="init-icon" style="color:#f59e0b">📊</span>
+        <div>
+          <div class="init-title">DAISY Transaction</div>
+          <div class="init-subtitle">O2 infrastructure monetisation</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>O2 tower/infrastructure assets sold to DAISY (est.)</li><li>Sale-leaseback improves near-term balance sheet</li><li>Lease costs impact FY2026 FCF (~£200M guided)</li><li>Unlocks capital for network reinvestment</li></ul>
+    </div></div>
+</div>
+
+<div class="section" id="subscribers">
+  <div class="section-title"><span class="dot"></span>Subscriber Metrics</div>
+  <div class="section-sub">O2 mobile connections (~23M) and Virgin Media broadband subscribers (5.6M). Broadband faces competitive pressure from BT/Sky; mobile stable.</div>
+  <div class="chart-wrap">
+    <div>                            <div id="vmo2_chart_subs" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("vmo2_chart_subs")) {                    Plotly.newPlot(                        "vmo2_chart_subs",                        [{"fill":"tozeroy","fillcolor":"rgba(208,2,27,0.12)","hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eBroadband: %{y:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#D0021B","width":3},"marker":{"color":"#D0021B","size":8},"mode":"lines+markers","name":"VM Broadband Subscribers (M)","x":["Q1'24","Q2'24","Q3'24","Q4'24","Q1'25","Q2'25"],"y":[5.75,5.73,5.71,5.69,5.66,5.62],"type":"scatter","xaxis":"x","yaxis":"y"},{"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eMobile: %{y:.1f}M\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#3b82f6","dash":"dot","width":2.5},"marker":{"color":"#3b82f6","size":7},"mode":"lines+markers","name":"O2 Mobile Connections (M)","x":["Q1'24","Q2'24","Q3'24","Q4'24","Q1'25","Q2'25"],"y":[23.2,23.1,23.0,23.0,23.0,23.1],"type":"scatter","xaxis":"x","yaxis":"y2"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,0.94],"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","title":{"text":"VM Broadband Subs (M)"},"ticksuffix":"M","range":[5.4,6.0]},"yaxis2":{"anchor":"x","overlaying":"y","side":"right","tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","title":{"text":"O2 Mobile Connections (M)"},"ticksuffix":"M","range":[22.5,23.8],"showgrid":false},"font":{"color":"#f1f5f9","family":"'Inter','Segoe UI',Arial,sans-serif","size":12},"title":{"font":{"size":14,"color":"#f1f5f9"},"text":"Subscriber Metrics \u2014 Broadband & Mobile","x":0.01,"xanchor":"left"},"margin":{"l":65,"r":50,"t":65,"b":50},"legend":{"font":{"size":11},"bgcolor":"rgba(0,0,0,0)","bordercolor":"#1e2940","borderwidth":1},"hoverlabel":{"font":{"size":12,"family":"'Inter',Arial,sans-serif"},"bgcolor":"#1e293b"},"paper_bgcolor":"#111827","plot_bgcolor":"#111827"},                        {"displayModeBar": true, "displaylogo": false, "modeBarButtonsToRemove": ["select2d", "lasso2d"], "responsive": true}                    )                };            </script>        </div>
+    <div class="chart-note">Broadband subscriber loss (-130K FY2024) reflects competitive broadband market. O2 mobile stable at 23M connections including MVNO partners.</div>
+  </div>
+</div>
+
+<div class="section" id="outlook">
+  <div class="section-title"><span class="dot"></span>FY2025 Performance & Outlook</div>
+  <div class="section-sub">From FY2025 results and Liberty Global IR. FY2026 FCF guidance ~£200M impacted by Daisy lease costs.</div>
+  <div class="guide-grid">
+    <div class="guide-card" style="border-top:3px solid #D0021B">
+      <div class="guide-label">Adj. EBITDA (FY2025)</div>
+      <div class="guide-value" style="color:#D0021B">£3.89B</div>
+      <div class="guide-note">-2.3% YoY</div>
+    </div>
+    <div class="guide-card" style="border-top:3px solid #22c55e">
+      <div class="guide-label">Adj. FCF (FY2025)</div>
+      <div class="guide-value" style="color:#22c55e">£0.39B</div>
+      <div class="guide-note">Daisy-impacted</div>
+    </div>
+    <div class="guide-card" style="border-top:3px solid #f97316">
+      <div class="guide-label">CapEx</div>
+      <div class="guide-value" style="color:#f97316">~£2.1B</div>
+      <div class="guide-note">Fiber acceleration</div>
+    </div>
+    <div class="guide-card" style="border-top:3px solid #3b82f6">
+      <div class="guide-label">5G Coverage</div>
+      <div class="guide-value" style="color:#3b82f6">87%</div>
+      <div class="guide-note">+12pp YoY</div>
+    </div></div>
+  <div style="margin-top:24px">
+    <div class="section-title" style="font-size:15px;margin-bottom:12px"><span class="dot"></span>Parent Company Context</div>
+    <div class="section-sub">VMO2 is 100% privately held. For investors, exposure is via parent companies below.</div>
+    
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-bottom:0">
+  <div class="init-card" style="border-left:3px solid #3b82f6">
+    <div class="init-title" style="margin-bottom:10px">Liberty Global (LBTYA) — 50% Owner</div>
+    <ul class="init-bullets">
+      <li>Listed: NASDAQ (LBTYA/LBTYB/LBTYK)</li>
+      <li>Liberty Global holds 50% of VMO2 JV</li>
+      <li>Also owns Sunrise (Switzerland), Telenet (Belgium)</li>
+      <li>Strategy: cable/fiber broadband + content bundles</li>
+      <li>VMO2 is Liberty Global's largest single asset</li>
+    </ul>
+  </div>
+  <div class="init-card" style="border-left:3px solid #8b5cf6">
+    <div class="init-title" style="margin-bottom:10px">Telefónica (TEF) — 50% Owner</div>
+    <ul class="init-bullets">
+      <li>Listed: BME (TEF) + NYSE ADR</li>
+      <li>Telefónica holds 50% via O2 UK contribution</li>
+      <li>Also owns O2 Germany, Movistar (Spain/LATAM)</li>
+      <li>Strategy: asset-light; JV cash generation</li>
+      <li>VMO2 contributes to Telefónica Europe cash flow</li>
+    </ul>
+  </div>
+</div>
+  </div>
+</div>
+
+<footer>
+  
+<strong>Data Sources:</strong>
+Liberty Global Investor Relations (libertyglobal.com/investors) &middot;
+VMO2 press releases (news.virginmediao2.co.uk) &middot;
+Ofcom UK telecoms data.<br>
+<strong>FX Note:</strong> All financials in GBP. Approx. USD: GBP/USD ~1.27 (April 2026).
+Q2 2025 revenue £2.53B ≈ $3.2B USD · FY2025 EBITDA £3.89B ≈ $4.9B USD.<br>
+<strong>Note:</strong> VMO2 is a private JV (Liberty Global 50% + Telefónica 50%); no standalone stock listing.
+Financials reported quarterly via Liberty Global results. Semi-annual consolidated view also available via Liberty Global Annual Report.<br>
+
+  <strong>Note:</strong> Quarters marked * are estimates derived from annual totals minus known quarters.
+  All financial data in USD unless stated. Dashboard generated: April 16, 2026  17:48
+</footer>
+</body>
+</html>

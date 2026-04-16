@@ -75,13 +75,18 @@ def carrier_card(meta, summary):
         cov5g    = summary.get("coverage_5g", "—")
         latest_q = summary.get("latest_q", meta.get("latest_q", ""))
 
+        svc_rev_str = f"${svc_rev:.1f}B" if isinstance(svc_rev, (int, float)) else "—"
+        margin_str  = f"{margin:.1f}%"   if isinstance(margin,  (int, float)) else "—"
+        fcf_str     = f"${fcf:.1f}B"     if isinstance(fcf,     (int, float)) else "N/A"
+        subs_str    = f"{subs:.0f}M"     if isinstance(subs,    (int, float)) else "—"
+        cov5g_str   = f"{cov5g}%"        if cov5g != "—" else "—"
         kpi_html = f"""
         <div class="lc-kpis">
-          <div class="lc-kpi"><div class="lc-kpi-label">Svc Rev (Q)</div><div class="lc-kpi-val">${svc_rev:.1f}B</div></div>
-          <div class="lc-kpi"><div class="lc-kpi-label">EBITDA Margin</div><div class="lc-kpi-val">{margin:.1f}%</div></div>
-          <div class="lc-kpi"><div class="lc-kpi-label">FCF (Annual)</div><div class="lc-kpi-val">${fcf:.1f}B</div></div>
-          <div class="lc-kpi"><div class="lc-kpi-label">Subscribers</div><div class="lc-kpi-val">{subs:.0f}M</div></div>
-          <div class="lc-kpi"><div class="lc-kpi-label">5G Coverage</div><div class="lc-kpi-val">{cov5g}%</div></div>
+          <div class="lc-kpi"><div class="lc-kpi-label">Svc Rev (Q)</div><div class="lc-kpi-val">{svc_rev_str}</div></div>
+          <div class="lc-kpi"><div class="lc-kpi-label">EBITDA Margin</div><div class="lc-kpi-val">{margin_str}</div></div>
+          <div class="lc-kpi"><div class="lc-kpi-label">FCF (Annual)</div><div class="lc-kpi-val">{fcf_str}</div></div>
+          <div class="lc-kpi"><div class="lc-kpi-label">Subscribers</div><div class="lc-kpi-val">{subs_str}</div></div>
+          <div class="lc-kpi"><div class="lc-kpi-label">5G Coverage</div><div class="lc-kpi-val">{cov5g_str}</div></div>
         </div>
         <a href="{out_file}" class="lc-btn" style="background:{accent}">View Dashboard &rarr;</a>"""
         status_badge = f'<span class="lc-badge" style="background:{GRN}">Live</span>'
@@ -125,10 +130,11 @@ def comparison_chart_div(active_carriers_data):
 
     names   = [d['meta']['short'] for d in active_carriers_data]
     accents = [d['meta']['accent'] for d in active_carriers_data]
-    svc_rev = [d['summary'].get('svc_rev', 0) for d in active_carriers_data]
-    margins = [d['summary'].get('ebitda_margin', 0) for d in active_carriers_data]
-    fcf     = [d['summary'].get('fcf_annual', 0) for d in active_carriers_data]
-    cov5g   = [d['summary'].get('coverage_5g', 0) for d in active_carriers_data]
+    svc_rev = [d['summary'].get('svc_rev') or 0 for d in active_carriers_data]
+    margins = [d['summary'].get('ebitda_margin') or 0 for d in active_carriers_data]
+    fcf_raw = [d['summary'].get('fcf_annual') for d in active_carriers_data]
+    fcf     = [v if v is not None else 0 for v in fcf_raw]
+    cov5g   = [d['summary'].get('coverage_5g') or 0 for d in active_carriers_data]
 
     from plotly.subplots import make_subplots
     fig = make_subplots(rows=1, cols=4,
@@ -146,8 +152,15 @@ def comparison_chart_div(active_carriers_data):
         fig.add_trace(_bar(nm, clr, v, "${:.1f}B", f"Svc Rev: ${v:.1f}B", 1), row=1, col=1)
     for i, (nm, clr, v) in enumerate(zip(names, accents, margins)):
         fig.add_trace(_bar(nm, clr, v, "{:.1f}%", f"EBITDA Margin: {v:.1f}%", 2), row=1, col=2)
-    for i, (nm, clr, v) in enumerate(zip(names, accents, fcf)):
-        fig.add_trace(_bar(nm, clr, v, "${:.1f}B", f"FCF: ${v:.1f}B", 3), row=1, col=3)
+    for i, (nm, clr, v, vr) in enumerate(zip(names, accents, fcf, fcf_raw)):
+        lbl = "N/A" if vr is None else f"${v:.1f}B"
+        tip = "FCF: N/A (private)" if vr is None else f"FCF: ${v:.1f}B"
+        fig.add_trace(go.Bar(x=[nm], y=[v], name=nm, marker_color=clr,
+                             showlegend=False, cliponaxis=False,
+                             text=[lbl], textposition="outside",
+                             textfont=dict(color=TXT, size=10),
+                             hovertemplate=f"<b>{nm}</b><br>{tip}<extra></extra>"),
+                      row=1, col=3)
     for i, (nm, clr, v) in enumerate(zip(names, accents, cov5g)):
         fig.add_trace(_bar(nm, clr, v, "{}%", f"5G Coverage: {v}%", 4), row=1, col=4)
 

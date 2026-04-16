@@ -73,6 +73,9 @@ def kpi_card(label, val, prior, unit, slug, accent):
     color   = GRN if (pct > 0) == good_up else RED
     if unit == "$B":
         v_str = f"${val:.1f}B"
+    elif unit in ("£B", "€B", "₱B"):
+        sym = unit[0]
+        v_str = f"{sym}{val:.1f}B"
     elif unit == "K":
         v_str = f"{val:,.0f}K"
     elif unit == "M":

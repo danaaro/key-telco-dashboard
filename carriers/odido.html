@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Odido — Executive Financial Dashboard</title>
+<script src="https://cdn.plot.ly/plotly-3.0.0.min.js"></script>
+
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#0a0e1a;--card:#111827;--accent:#FF6B00;
+  --text:#f1f5f9;--muted:#94a3b8;--grid:#1e2940;
+  --grn:#22c55e;--red:#ef4444;--ylw:#f59e0b;--blu:#3b82f6;--tea:#14b8a6;
+}
+html{scroll-behavior:smooth}
+body{font-family:'Inter','Segoe UI',Arial,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;font-size:14px}
+nav{position:sticky;top:0;z-index:100;background:rgba(10,14,26,0.95);backdrop-filter:blur(8px);
+  border-bottom:1px solid var(--grid);display:flex;align-items:center;
+  padding:0 24px;height:52px;gap:4px;overflow-x:auto}
+.nav-brand{font-weight:700;font-size:15px;color:var(--accent);margin-right:16px;white-space:nowrap;letter-spacing:-0.3px}
+.nav-home{color:var(--muted);text-decoration:none;font-size:11px;padding:4px 8px;border-radius:5px;white-space:nowrap}
+.nav-home:hover{color:var(--text);background:var(--grid)}
+nav a{color:var(--muted);text-decoration:none;font-size:12px;font-weight:500;
+  padding:6px 12px;border-radius:6px;white-space:nowrap;transition:all .2s}
+nav a:hover{color:var(--text);background:var(--grid)}
+.nav-print{margin-left:auto;background:var(--accent);color:white;border:none;
+  padding:6px 14px;border-radius:6px;cursor:pointer;font-size:12px;font-weight:600;
+  white-space:nowrap;transition:opacity .2s}
+.nav-print:hover{opacity:0.85}
+.hero{background:linear-gradient(135deg,#111827 0%,#1a0a14 60%,#0a0e1a 100%);
+  border-bottom:1px solid var(--grid);padding:36px 32px 28px}
+.hero-badge{display:inline-block;background:var(--accent);color:white;font-size:10px;
+  font-weight:700;letter-spacing:1px;text-transform:uppercase;padding:3px 10px;
+  border-radius:4px;margin-bottom:12px}
+.hero h1{font-size:28px;font-weight:700;letter-spacing:-0.5px}
+.hero h1 span{color:var(--accent)}
+.hero-meta{margin-top:8px;color:var(--muted);font-size:12px;display:flex;gap:24px;flex-wrap:wrap}
+.hero-meta strong{color:var(--text)}
+.section{padding:32px 24px;border-bottom:1px solid var(--grid)}
+.section-title{font-size:18px;font-weight:700;color:var(--text);margin-bottom:6px;
+  display:flex;align-items:center;gap:10px}
+.section-title .dot{width:4px;height:20px;background:var(--accent);border-radius:2px}
+.section-sub{color:var(--muted);font-size:12px;margin-bottom:20px}
+.kpi-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(175px,1fr));gap:12px;margin-bottom:8px}
+.kpi-card{background:var(--card);border:1px solid var(--grid);border-radius:10px;
+  padding:16px;transition:border-color .2s}
+.kpi-card:hover{border-color:var(--accent)}
+.kpi-label{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:6px}
+.kpi-value{font-size:22px;font-weight:700;letter-spacing:-0.5px}
+.kpi-delta{font-size:11px;font-weight:600;margin-top:4px}
+.chart-wrap{background:var(--card);border:1px solid var(--grid);border-radius:12px;
+  padding:4px;overflow:hidden;margin-bottom:16px}
+.chart-wrap .chart-note{padding:6px 16px 10px;font-size:10px;color:var(--muted);font-style:italic}
+.chart-grid-2{display:grid;grid-template-columns:1fr 1fr;gap:16px}
+@media(max-width:860px){.chart-grid-2{grid-template-columns:1fr}}
+.chart-placeholder{background:var(--card);border:1px dashed var(--grid);border-radius:12px;
+  padding:32px;color:var(--muted);text-align:center;font-size:13px}
+.init-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(300px,1fr));gap:16px}
+.init-card{background:var(--card);border-radius:10px;padding:18px;border:1px solid var(--grid);transition:border-color .2s}
+.init-card:hover{border-color:var(--accent)}
+.init-header{display:flex;gap:12px;align-items:flex-start;margin-bottom:12px}
+.init-icon{font-size:24px;line-height:1;flex-shrink:0}
+.init-title{font-size:14px;font-weight:700}
+.init-subtitle{font-size:11px;color:var(--muted);margin-top:2px}
+.init-bullets{font-size:12px;color:var(--muted);padding-left:18px}
+.init-bullets li{margin-bottom:4px}
+.guide-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px}
+.guide-card{background:var(--card);border-radius:10px;padding:18px;border:1px solid var(--grid)}
+.guide-label{font-size:11px;color:var(--muted);font-weight:500;margin-bottom:8px}
+.guide-value{font-size:20px;font-weight:700;letter-spacing:-0.5px}
+.guide-note{font-size:11px;color:var(--muted);margin-top:6px}
+.est-note{background:var(--card);border:1px solid rgba(245,158,11,0.25);border-radius:8px;
+  padding:10px 16px;font-size:11px;color:var(--muted);margin-bottom:16px}
+.est-note strong{color:#f59e0b}
+footer{padding:24px 32px;color:var(--muted);font-size:11px;border-top:1px solid var(--grid);line-height:1.7}
+footer a{color:var(--accent);text-decoration:none}
+footer a:hover{text-decoration:underline}
+@media print{
+  body{background:white;color:#111}
+  nav,.nav-print{display:none!important}
+  .hero{background:#f8f8f8;border-bottom:2px solid var(--accent)}
+  .kpi-card,.init-card,.guide-card,.chart-wrap{background:white;border-color:#ddd;break-inside:avoid}
+  .section{break-inside:avoid}
+}
+</style>
+
+</head>
+<body>
+<nav>
+  <span class="nav-brand">🇳🇱 Odido</span>
+  <a class="nav-home" href="../index.html">⟵ All Carriers</a>
+  <a href="#kpis">KPIs</a><a href="#financials">Financials</a><a href="#network">Network</a><a href="#outlook">Outlook</a>
+  <button class="nav-print" onclick="window.print()">⬇ Print / Save PDF</button>
+</nav>
+<div class="hero">
+  <div class="hero-badge">Executive Strategy Brief</div>
+  <h1>Odido <span>(Private)</span> — Financial Dashboard</h1>
+  <div class="hero-meta">
+    <span><strong>Latest Quarter:</strong> FY2025</span>
+    <span><strong>Stock Period:</strong> N/A</span>
+    <span><strong>Lens:</strong> Network Domain · 5G · Broadband · AI/Software</span>
+    <span><strong>Generated:</strong> April 16, 2026  17:48</span>
+    <span><strong>Sources:</strong> Odido IR · SEC EDGAR · Yahoo Finance</span>
+  </div>
+</div>
+
+<div class="section" id="kpis">
+  <div class="section-title"><span class="dot"></span>FY2025 Key Performance Indicators</div>
+  <div class="section-sub">FY2025 vs FY2024 full-year comparison. Source: Odido company reports / Telecompaper.</div>
+  <div class="kpi-grid">
+    <div class="kpi-card">
+      <div class="kpi-label">Total Revenue</div>
+      <div class="kpi-value">€2.4B</div>
+      <div class="kpi-delta" style="color:#22c55e">
+        ▲ 1.3% vs prior year Q
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Adj. EBITDA</div>
+      <div class="kpi-value">€0.9B</div>
+      <div class="kpi-delta" style="color:#22c55e">
+        ▲ 3.4% vs prior year Q
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">EBITDA Margin</div>
+      <div class="kpi-value">38.20%</div>
+      <div class="kpi-delta" style="color:#22c55e">
+        ▲ 1.9% vs prior year Q
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Mobile Subscribers</div>
+      <div class="kpi-value">3.1M</div>
+      <div class="kpi-delta" style="color:#22c55e">
+        ▲ 1.6% vs prior year Q
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">Broadband Subs</div>
+      <div class="kpi-value">1.0M</div>
+      <div class="kpi-delta" style="color:#22c55e">
+        ▲ 6.3% vs prior year Q
+      </div>
+    </div>
+    <div class="kpi-card">
+      <div class="kpi-label">5G Coverage (NL)</div>
+      <div class="kpi-value">86.00%</div>
+      <div class="kpi-delta" style="color:#22c55e">
+        ▲ 1.2% vs prior year Q
+      </div>
+    </div></div>
+  <div class="est-note">
+    <strong>Private Company:</strong> Odido is PE-backed (Warburg Pincus + Apax Partners); not publicly listed as of April 2026.
+    IPO on Euronext Amsterdam planned for 2026. CapEx and FCF data not publicly disclosed.
+    Approx. USD equiv. at €1 = $1.09 noted in footer. Former name: T-Mobile Netherlands (rebranded Sep 2023).
+  </div>
+</div>
+
+<div class="section" id="financials">
+  <div class="section-title"><span class="dot"></span>Annual Financial Performance</div>
+  <div class="section-sub">FY2023–FY2025 actuals. EBITDA margin improving toward 38%+. CapEx/FCF not publicly disclosed.</div>
+  <div class="chart-grid-2">
+    <div class="chart-wrap">
+      <div>                            <div id="odido_chart_annual" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("odido_chart_annual")) {                    Plotly.newPlot(                        "odido_chart_annual",                        [{"cliponaxis":false,"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eRevenue: \u20ac%{y:.2f}B\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FF6B00"},"name":"Total Revenue","text":["\u20ac2.29B","\u20ac2.35B","\u20ac2.38B"],"textfont":{"color":"#f1f5f9","size":10},"textposition":"outside","x":["FY2023","FY2024","FY2025"],"y":[2.29,2.35,2.38],"type":"bar"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eEBITDA: \u20ac%{y:.2f}B\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#14b8a6"},"name":"Adj. EBITDA","text":["\u20ac0.85B","\u20ac0.88B","\u20ac0.91B"],"textfont":{"color":"#f1f5f9","size":10},"textposition":"outside","x":["FY2023","FY2024","FY2025"],"y":[0.85,0.88,0.91],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"font":{"color":"#f1f5f9","family":"'Inter','Segoe UI',Arial,sans-serif","size":12},"title":{"font":{"size":14,"color":"#f1f5f9"},"text":"Annual Revenue & EBITDA (EUR)","x":0.01,"xanchor":"left"},"margin":{"l":65,"r":50,"t":65,"b":50},"legend":{"font":{"size":11},"bgcolor":"rgba(0,0,0,0)","bordercolor":"#1e2940","borderwidth":1},"hoverlabel":{"font":{"size":12,"family":"'Inter',Arial,sans-serif"},"bgcolor":"#1e293b"},"paper_bgcolor":"#111827","plot_bgcolor":"#111827","barmode":"group","xaxis":{"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940"},"yaxis":{"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","title":{"text":"EUR Billions"},"tickprefix":"\u20ac","range":[0,3.2]},"annotations":[{"font":{"color":"#f59e0b","size":9},"showarrow":false,"text":"37.1%","x":"FY2023","xref":"x","y":0.9299999999999999,"yref":"y"},{"font":{"color":"#f59e0b","size":9},"showarrow":false,"text":"37.4%","x":"FY2024","xref":"x","y":0.96,"yref":"y"},{"font":{"color":"#f59e0b","size":9},"showarrow":false,"text":"38.2%","x":"FY2025","xref":"x","y":0.99,"yref":"y"},{"arrowcolor":"#f97316","arrowhead":2,"bgcolor":"#111827","bordercolor":"#f97316","borderwidth":1,"font":{"color":"#f97316","size":9},"showarrow":true,"text":"Rebranded to\u003cbr\u003eOdido Sep 2023","x":"FY2023","y":2.5}]},                        {"displayModeBar": true, "displaylogo": false, "modeBarButtonsToRemove": ["select2d", "lasso2d"], "responsive": true}                    )                };            </script>        </div>
+      <div class="chart-note">Steady revenue growth (+4% over 2yr). EBITDA margin expanding as fixed broadband scales. Source: Telecompaper / Odido press releases.</div>
+    </div>
+    <div class="chart-wrap">
+      <div>                            <div id="odido_chart_segments" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("odido_chart_segments")) {                    Plotly.newPlot(                        "odido_chart_segments",                        [{"cliponaxis":false,"hovertemplate":"\u003cb\u003eMobile\u003c\u002fb\u003e %{x}\u003cbr\u003e\u20ac%{y:.2f}B\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FF6B00"},"name":"Mobile","text":["\u20ac1.37B","\u20ac1.38B"],"textfont":{"color":"#f1f5f9","size":10},"textposition":"outside","x":["FY2024","FY2025"],"y":[1.37,1.38],"type":"bar"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003eFixed Broadband\u003c\u002fb\u003e %{x}\u003cbr\u003e\u20ac%{y:.2f}B\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#14b8a6"},"name":"Fixed Broadband","text":["\u20ac0.50B","\u20ac0.56B"],"textfont":{"color":"#f1f5f9","size":10},"textposition":"outside","x":["FY2024","FY2025"],"y":[0.5,0.56],"type":"bar"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003eBusiness \u002f Other\u003c\u002fb\u003e %{x}\u003cbr\u003e\u20ac%{y:.2f}B\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#3b82f6"},"name":"Business \u002f Other","text":["\u20ac0.47B","\u20ac0.44B"],"textfont":{"color":"#f1f5f9","size":10},"textposition":"outside","x":["FY2024","FY2025"],"y":[0.47,0.44],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"font":{"color":"#f1f5f9","family":"'Inter','Segoe UI',Arial,sans-serif","size":12},"title":{"font":{"size":14,"color":"#f1f5f9"},"text":"Revenue by Segment \u2014 FY2024 vs FY2025","x":0.01,"xanchor":"left"},"margin":{"l":65,"r":50,"t":65,"b":50},"legend":{"font":{"size":11},"bgcolor":"rgba(0,0,0,0)","bordercolor":"#1e2940","borderwidth":1},"hoverlabel":{"font":{"size":12,"family":"'Inter',Arial,sans-serif"},"bgcolor":"#1e293b"},"paper_bgcolor":"#111827","plot_bgcolor":"#111827","barmode":"group","xaxis":{"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940"},"yaxis":{"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","title":{"text":"EUR Billions"},"tickprefix":"\u20ac","range":[0,1.8]},"annotations":[{"arrowcolor":"#14b8a6","arrowhead":2,"bgcolor":"#111827","bordercolor":"#14b8a6","borderwidth":1,"font":{"color":"#14b8a6","size":9},"showarrow":true,"text":"Fixed broadband\u003cbr\u003e+11% YoY\u003cbr\u003e(FWA growth)","x":"FY2025","y":0.62}]},                        {"displayModeBar": true, "displaylogo": false, "modeBarButtonsToRemove": ["select2d", "lasso2d"], "responsive": true}                    )                };            </script>        </div>
+      <div class="chart-note">Fixed broadband was the standout growth segment in FY2025 (+11% YoY) driven by FWA "Klik&Klaar" launch.</div>
+    </div>
+  </div>
+</div>
+
+<div class="section" id="network">
+  <div class="section-title"><span class="dot"></span>Network Domain — 5G, FWA & Strategic Initiatives</div>
+  <div class="section-sub">Odido operates the Netherlands' fastest 5G network (Opensignal). Fixed broadband now a key growth pillar through FWA.</div>
+  <div class="chart-grid-2" style="margin-bottom:16px">
+    <div class="chart-wrap">
+      <div>                            <div id="odido_chart_cov" class="plotly-graph-div" style="height:280px; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("odido_chart_cov")) {                    Plotly.newPlot(                        "odido_chart_cov",                        [{"cliponaxis":false,"hovertemplate":"\u003cb\u003eFY2023\u003c\u002fb\u003e\u003cbr\u003e5G Coverage: 85%\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#f97316"},"name":"FY2023","showlegend":false,"text":["85%"],"textfont":{"color":"#f1f5f9","size":12},"textposition":"outside","x":["FY2023"],"y":[85],"type":"bar"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003eFY2024\u003c\u002fb\u003e\u003cbr\u003e5G Coverage: 85%\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#f59e0b"},"name":"FY2024","showlegend":false,"text":["85%"],"textfont":{"color":"#f1f5f9","size":12},"textposition":"outside","x":["FY2024"],"y":[85],"type":"bar"},{"cliponaxis":false,"hovertemplate":"\u003cb\u003eFY2025\u003c\u002fb\u003e\u003cbr\u003e5G Coverage: 86%\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FF6B00"},"name":"FY2025","showlegend":false,"text":["86%"],"textfont":{"color":"#f1f5f9","size":12},"textposition":"outside","x":["FY2025"],"y":[86],"type":"bar"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"shapes":[{"line":{"color":"#22c55e","dash":"dot","width":1.5},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":86,"y1":86,"yref":"y"}],"annotations":[{"font":{"color":"#22c55e","size":9},"showarrow":false,"text":"86% NL pop \u2014 fastest speeds in Netherlands (Opensignal)","x":1,"xanchor":"left","xref":"x domain","y":86,"yanchor":"middle","yref":"y"}],"font":{"color":"#f1f5f9","family":"'Inter','Segoe UI',Arial,sans-serif","size":12},"title":{"font":{"size":14,"color":"#f1f5f9"},"text":"5G Network Coverage \u2014 % Netherlands Population","x":0.01,"xanchor":"left"},"margin":{"l":65,"r":50,"t":65,"b":50},"legend":{"font":{"size":11},"bgcolor":"rgba(0,0,0,0)","bordercolor":"#1e2940","borderwidth":1},"hoverlabel":{"font":{"size":12,"family":"'Inter',Arial,sans-serif"},"bgcolor":"#1e293b"},"paper_bgcolor":"#111827","plot_bgcolor":"#111827","height":280,"xaxis":{"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940"},"yaxis":{"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","title":{"text":"% Netherlands Population"},"ticksuffix":"%","range":[0,110]}},                        {"displayModeBar": true, "displaylogo": false, "modeBarButtonsToRemove": ["select2d", "lasso2d"], "responsive": true}                    )                };            </script>        </div>
+      <div class="chart-note">86% 5G population coverage. Odido ranked #1 in Netherlands for 5G download speeds (331.9 Mbps avg, Opensignal 2025).</div>
+    </div>
+    <div class="chart-wrap">
+      <div>                            <div id="odido_chart_subs" class="plotly-graph-div" style="height:100%; width:100%;"></div>            <script>                window.PLOTLYENV=window.PLOTLYENV || {};                                if (document.getElementById("odido_chart_subs")) {                    Plotly.newPlot(                        "odido_chart_subs",                        [{"cliponaxis":false,"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eBroadband: %{y:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","marker":{"color":"#FF6B00"},"name":"Broadband Subscribers (M)","text":["0.88M","0.95M","1.01M"],"textfont":{"color":"#f1f5f9","size":10},"textposition":"outside","x":["FY2023","FY2024","FY2025"],"y":[0.88,0.95,1.01],"type":"bar","xaxis":"x","yaxis":"y"},{"hovertemplate":"\u003cb\u003e%{x}\u003c\u002fb\u003e\u003cbr\u003eMobile: %{y:.2f}M\u003cextra\u003e\u003c\u002fextra\u003e","line":{"color":"#3b82f6","width":2.5},"marker":{"color":"#3b82f6","size":9},"mode":"lines+markers+text","name":"Mobile Subscribers (M)","text":["3.05M","3.10M","3.15M"],"textfont":{"color":"#3b82f6","size":9},"textposition":"top center","x":["FY2023","FY2024","FY2025"],"y":[3.05,3.1,3.15],"type":"scatter","xaxis":"x","yaxis":"y2"}],                        {"template":{"data":{"histogram2dcontour":[{"type":"histogram2dcontour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"choropleth":[{"type":"choropleth","colorbar":{"outlinewidth":0,"ticks":""}}],"histogram2d":[{"type":"histogram2d","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"heatmap":[{"type":"heatmap","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"contourcarpet":[{"type":"contourcarpet","colorbar":{"outlinewidth":0,"ticks":""}}],"contour":[{"type":"contour","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"surface":[{"type":"surface","colorbar":{"outlinewidth":0,"ticks":""},"colorscale":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]]}],"mesh3d":[{"type":"mesh3d","colorbar":{"outlinewidth":0,"ticks":""}}],"scatter":[{"fillpattern":{"fillmode":"overlay","size":10,"solidity":0.2},"type":"scatter"}],"parcoords":[{"type":"parcoords","line":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolargl":[{"type":"scatterpolargl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"bar":[{"error_x":{"color":"#2a3f5f"},"error_y":{"color":"#2a3f5f"},"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"bar"}],"scattergeo":[{"type":"scattergeo","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterpolar":[{"type":"scatterpolar","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"histogram":[{"marker":{"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"histogram"}],"scattergl":[{"type":"scattergl","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatter3d":[{"type":"scatter3d","line":{"colorbar":{"outlinewidth":0,"ticks":""}},"marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermap":[{"type":"scattermap","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattermapbox":[{"type":"scattermapbox","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scatterternary":[{"type":"scatterternary","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"scattercarpet":[{"type":"scattercarpet","marker":{"colorbar":{"outlinewidth":0,"ticks":""}}}],"carpet":[{"aaxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"baxis":{"endlinecolor":"#2a3f5f","gridcolor":"white","linecolor":"white","minorgridcolor":"white","startlinecolor":"#2a3f5f"},"type":"carpet"}],"table":[{"cells":{"fill":{"color":"#EBF0F8"},"line":{"color":"white"}},"header":{"fill":{"color":"#C8D4E3"},"line":{"color":"white"}},"type":"table"}],"barpolar":[{"marker":{"line":{"color":"#E5ECF6","width":0.5},"pattern":{"fillmode":"overlay","size":10,"solidity":0.2}},"type":"barpolar"}],"pie":[{"automargin":true,"type":"pie"}]},"layout":{"autotypenumbers":"strict","colorway":["#636efa","#EF553B","#00cc96","#ab63fa","#FFA15A","#19d3f3","#FF6692","#B6E880","#FF97FF","#FECB52"],"font":{"color":"#2a3f5f"},"hovermode":"closest","hoverlabel":{"align":"left"},"paper_bgcolor":"white","plot_bgcolor":"#E5ECF6","polar":{"bgcolor":"#E5ECF6","angularaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"radialaxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"ternary":{"bgcolor":"#E5ECF6","aaxis":{"gridcolor":"white","linecolor":"white","ticks":""},"baxis":{"gridcolor":"white","linecolor":"white","ticks":""},"caxis":{"gridcolor":"white","linecolor":"white","ticks":""}},"coloraxis":{"colorbar":{"outlinewidth":0,"ticks":""}},"colorscale":{"sequential":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"sequentialminus":[[0.0,"#0d0887"],[0.1111111111111111,"#46039f"],[0.2222222222222222,"#7201a8"],[0.3333333333333333,"#9c179e"],[0.4444444444444444,"#bd3786"],[0.5555555555555556,"#d8576b"],[0.6666666666666666,"#ed7953"],[0.7777777777777778,"#fb9f3a"],[0.8888888888888888,"#fdca26"],[1.0,"#f0f921"]],"diverging":[[0,"#8e0152"],[0.1,"#c51b7d"],[0.2,"#de77ae"],[0.3,"#f1b6da"],[0.4,"#fde0ef"],[0.5,"#f7f7f7"],[0.6,"#e6f5d0"],[0.7,"#b8e186"],[0.8,"#7fbc41"],[0.9,"#4d9221"],[1,"#276419"]]},"xaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"yaxis":{"gridcolor":"white","linecolor":"white","ticks":"","title":{"standoff":15},"zerolinecolor":"white","automargin":true,"zerolinewidth":2},"scene":{"xaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"yaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2},"zaxis":{"backgroundcolor":"#E5ECF6","gridcolor":"white","linecolor":"white","showbackground":true,"ticks":"","zerolinecolor":"white","gridwidth":2}},"shapedefaults":{"line":{"color":"#2a3f5f"}},"annotationdefaults":{"arrowcolor":"#2a3f5f","arrowhead":0,"arrowwidth":1},"geo":{"bgcolor":"white","landcolor":"#E5ECF6","subunitcolor":"white","showland":true,"showlakes":true,"lakecolor":"white"},"title":{"x":0.05},"mapbox":{"style":"light"}}},"xaxis":{"anchor":"y","domain":[0.0,0.94],"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940"},"yaxis":{"anchor":"x","domain":[0.0,1.0],"tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","title":{"text":"Broadband Subscribers (M)"},"ticksuffix":"M","range":[0,1.4]},"yaxis2":{"anchor":"x","overlaying":"y","side":"right","tickfont":{"size":11},"gridcolor":"#1e2940","zeroline":false,"linecolor":"#1e2940","title":{"text":"Mobile Subscribers (M)"},"ticksuffix":"M","range":[2.8,3.5],"showgrid":false},"shapes":[{"line":{"color":"#22c55e","dash":"dot","width":1.5},"type":"line","x0":0,"x1":1,"xref":"x domain","y0":1.0,"y1":1.0,"yref":"y"}],"annotations":[{"font":{"color":"#22c55e","size":9},"showarrow":false,"text":"1M broadband milestone (Q1 2025)","x":1,"xanchor":"left","xref":"x domain","y":1.0,"yanchor":"middle","yref":"y"}],"font":{"color":"#f1f5f9","family":"'Inter','Segoe UI',Arial,sans-serif","size":12},"title":{"font":{"size":14,"color":"#f1f5f9"},"text":"Subscriber Growth \u2014 Broadband & Mobile","x":0.01,"xanchor":"left"},"margin":{"l":65,"r":50,"t":65,"b":50},"legend":{"font":{"size":11},"bgcolor":"rgba(0,0,0,0)","bordercolor":"#1e2940","borderwidth":1},"hoverlabel":{"font":{"size":12,"family":"'Inter',Arial,sans-serif"},"bgcolor":"#1e293b"},"paper_bgcolor":"#111827","plot_bgcolor":"#111827"},                        {"displayModeBar": true, "displaylogo": false, "modeBarButtonsToRemove": ["select2d", "lasso2d"], "responsive": true}                    )                };            </script>        </div>
+      <div class="chart-note">Broadband crossed 1M milestone in Q1 2025 — driven by FWA "Klik&Klaar" launch. Mobile base stable at ~3.1M.</div>
+    </div>
+  </div>
+  <div class="init-grid">
+    <div class="init-card" style="border-left:3px solid #FF6B00">
+      <div class="init-header">
+        <span class="init-icon" style="color:#FF6B00">🔶</span>
+        <div>
+          <div class="init-title">Odido Brand & Relaunch</div>
+          <div class="init-subtitle">T-Mobile Netherlands → Odido (Sep 2023)</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>Rebranded Sept 2023 from T-Mobile Netherlands</li><li>Fresh brand identity: 'Odido' = everyone together</li><li>Customer-focused positioning in competitive Dutch market</li><li>Growing brand awareness driving NPS improvement</li></ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #14b8a6">
+      <div class="init-header">
+        <span class="init-icon" style="color:#14b8a6">🏠</span>
+        <div>
+          <div class="init-title">Fixed Wireless Access (FWA)</div>
+          <div class="init-subtitle">'Klik&Klaar' home internet</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>FWA launched 2024 — 'Klik&Klaar' (plug-and-play) product</li><li>Key driver of crossing 1M broadband milestone (Q1 2025)</li><li>Broadband revenue up +11% YoY in FY2025</li><li>Now ~24% of total revenue and growing</li></ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #3b82f6">
+      <div class="init-header">
+        <span class="init-icon" style="color:#3b82f6">📡</span>
+        <div>
+          <div class="init-title">5G Network Leadership</div>
+          <div class="init-subtitle">Fastest 5G speeds in the Netherlands</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>86% Netherlands population covered with 5G</li><li>Averaging 331.9 Mbps — highest in Netherlands (Opensignal)</li><li>3.5 GHz spectrum deployment complete (80% network modernized)</li><li>SA 5G core roadmap underway for network slicing</li></ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #22c55e">
+      <div class="init-header">
+        <span class="init-icon" style="color:#22c55e">📊</span>
+        <div>
+          <div class="init-title">IPO Preparation (2026)</div>
+          <div class="init-subtitle">PE exit via Euronext Amsterdam</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>Warburg Pincus + Apax Partners (PE owners) targeting IPO</li><li>Expected ~€1B valuation at listing</li><li>Strengthening financial disclosure ahead of IPO</li><li>Revenue and EBITDA growth trajectory supports valuation</li></ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #f97316">
+      <div class="init-header">
+        <span class="init-icon" style="color:#f97316">🤖</span>
+        <div>
+          <div class="init-title">Network Automation & AI</div>
+          <div class="init-subtitle">Intelligent network operations</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>AI-driven network self-optimization deployed on 3.5 GHz layer</li><li>Automated fault detection and remediation</li><li>Smart CapEx allocation based on customer demand signals</li><li>Data analytics platform for customer experience improvement</li></ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #8b5cf6">
+      <div class="init-header">
+        <span class="init-icon" style="color:#8b5cf6">💼</span>
+        <div>
+          <div class="init-title">Business/Enterprise Strategy</div>
+          <div class="init-subtitle">Corporate segment revival</div>
+        </div>
+      </div>
+      <ul class="init-bullets"><li>Business segment under pressure (-6% FY2025 est.)</li><li>Focus: SME and mid-market with bundled 5G + connectivity</li><li>Government and public sector contracts growing</li><li>SD-WAN and managed network services for enterprise</li></ul>
+    </div></div>
+</div>
+
+<div class="section" id="outlook">
+  <div class="section-title"><span class="dot"></span>FY2025 Results & Strategic Outlook</div>
+  <div class="section-sub">Revenue and EBITDA growth on track for IPO. Fixed broadband scaling rapidly; mobile stable; 5G leadership sustained.</div>
+  <div class="guide-grid">
+    <div class="guide-card" style="border-top:3px solid #FF6B00">
+      <div class="guide-label">Total Revenue (FY2025)</div>
+      <div class="guide-value" style="color:#FF6B00">€2.38B</div>
+      <div class="guide-note">+1.3% YoY</div>
+    </div>
+    <div class="guide-card" style="border-top:3px solid #14b8a6">
+      <div class="guide-label">EBITDA Margin</div>
+      <div class="guide-value" style="color:#14b8a6">38.2%</div>
+      <div class="guide-note">+0.7pp YoY</div>
+    </div>
+    <div class="guide-card" style="border-top:3px solid #22c55e">
+      <div class="guide-label">Fixed Broadband</div>
+      <div class="guide-value" style="color:#22c55e">1.01M</div>
+      <div class="guide-note">Crossed 1M milestone</div>
+    </div>
+    <div class="guide-card" style="border-top:3px solid #3b82f6">
+      <div class="guide-label">5G Coverage</div>
+      <div class="guide-value" style="color:#3b82f6">86%</div>
+      <div class="guide-note">Fastest in Netherlands</div>
+    </div></div>
+  <div style="margin-top:24px;display:grid;grid-template-columns:1fr 1fr;gap:16px">
+    <div class="init-card" style="border-left:3px solid #FF6B00">
+      <div class="init-title" style="margin-bottom:10px">Strategic Priorities 2026</div>
+      <ul class="init-bullets">
+        <li>Scale fixed broadband to 1.5M+ (FWA + fiber)</li>
+        <li>Maintain 5G speed leadership via SA core rollout</li>
+        <li>Drive EBITDA margin toward 40% via operational efficiency</li>
+        <li>Complete IPO preparation and Euronext Amsterdam listing</li>
+      </ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid #14b8a6">
+      <div class="init-title" style="margin-bottom:10px">Market Position (Netherlands)</div>
+      <ul class="init-bullets">
+        <li>#3 mobile operator in Netherlands (~19% market share)</li>
+        <li>Fastest 5G network by speed (Opensignal 2025)</li>
+        <li>Growing fixed broadband challenger to KPN and Ziggo</li>
+        <li>Strong SME/enterprise presence via former T-Mobile B2B</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<footer>
+  
+<strong>Data Sources:</strong>
+Odido company press releases (odido.nl) &middot;
+Telecompaper industry reports &middot;
+Opensignal Netherlands Mobile Network Experience (2025) &middot;
+Company financial disclosures.<br>
+<strong>FX Note:</strong> All financials in EUR. Approx. USD: EUR/USD ~1.09 (April 2026).
+FY2025 revenue €2.38B ≈ $2.59B USD · EBITDA €0.91B ≈ $0.99B USD.<br>
+<strong>Note:</strong> Odido is private (PE-backed); detailed CapEx, FCF, and sub-quarterly financials not publicly disclosed.
+Data based on public press releases and industry reports. IPO expected Euronext Amsterdam 2026.<br>
+
+  <strong>Note:</strong> Quarters marked * are estimates derived from annual totals minus known quarters.
+  All financial data in USD unless stated. Dashboard generated: April 16, 2026  17:48
+</footer>
+</body>
+</html>
