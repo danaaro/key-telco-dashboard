@@ -41,7 +41,7 @@ CARRIERS = {
     "att": {
         "id":          "att",
         "name":        "AT&T",
-        "short":       "T",
+        "short":       "AT&T",
         "ticker":      "T",
         "exchange":    "NYSE",
         "currency":    "USD",

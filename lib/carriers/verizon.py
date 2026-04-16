@@ -194,17 +194,17 @@ def _chart_annual():
     fig.add_trace(go.Bar(x=ANN, y=A['ebitda'], name="Adj. EBITDA",
                          marker_color=ACCENT,
                          text=[f"${v:.1f}B" for v in A['ebitda']],
-                         textposition="outside", textfont=dict(size=10, color=TXT),
+                         cliponaxis=False, textposition="outside", textfont=dict(size=10, color=TXT),
                          hovertemplate="<b>%{x}</b><br>EBITDA: $%{y:.1f}B<extra></extra>"))
     fig.add_trace(go.Bar(x=ANN, y=A['fcf'], name="Free Cash Flow",
                          marker_color=GRN,
                          text=[f"${v:.1f}B" for v in A['fcf']],
-                         textposition="outside", textfont=dict(size=10, color=TXT),
+                         cliponaxis=False, textposition="outside", textfont=dict(size=10, color=TXT),
                          hovertemplate="<b>%{x}</b><br>FCF: $%{y:.1f}B<extra></extra>"))
     fig.add_trace(go.Bar(x=ANN, y=A['capex'], name="CapEx",
                          marker_color=ORG,
                          text=[f"${v:.1f}B" for v in A['capex']],
-                         textposition="outside", textfont=dict(size=10, color=TXT),
+                         cliponaxis=False, textposition="outside", textfont=dict(size=10, color=TXT),
                          hovertemplate="<b>%{x}</b><br>CapEx: $%{y:.1f}B<extra></extra>"))
     # FY2026 guidance
     fig.add_trace(go.Bar(x=['FY2026E'], y=[G26['ebitda_lo']],
@@ -343,7 +343,7 @@ def _chart_capital():
     fig.add_trace(go.Bar(x=ANN, y=A['fcf'], name="Free Cash Flow",
                          marker_color=GRN,
                          text=[f"${v:.1f}B" for v in A['fcf']],
-                         textposition="outside", textfont=dict(size=10, color=TXT),
+                         cliponaxis=False, textposition="outside", textfont=dict(size=10, color=TXT),
                          hovertemplate="<b>%{x}</b><br>FCF: $%{y:.1f}B<extra></extra>"))
     fig.add_trace(go.Bar(x=ANN, y=A['capex'], name="CapEx (Network Investment)",
                          marker_color=ORG,
@@ -353,7 +353,7 @@ def _chart_capital():
     fig.add_trace(go.Bar(x=ANN, y=A['shr'], name="Dividends Paid",
                          marker_color=PRP,
                          text=[f"${v:.1f}B" for v in A['shr']],
-                         textposition="outside", textfont=dict(size=10, color=TXT),
+                         cliponaxis=False, textposition="outside", textfont=dict(size=10, color=TXT),
                          hovertemplate="<b>%{x}</b><br>Dividends: $%{y:.1f}B<extra></extra>"))
     # Debt trend line
     fig.add_trace(go.Scatter(x=ANN, y=A['debt'], name="Total Debt ($B)",
@@ -463,7 +463,7 @@ def _chart_5g_coverage():
         fig.add_trace(go.Bar(
             y=[tier], x=[pop], orientation='h', name=tier,
             marker_color=clr, showlegend=False,
-            text=[f"{pop}M"], textposition="outside",
+            text=[f"{pop}M"], cliponaxis=False, textposition="outside",
             textfont=dict(color=TXT, size=11),
             hovertemplate=f"<b>{tier}</b><br>{pop}M people ({COVERAGE['pct'][i]}%)<extra></extra>",
         ), row=1, col=1)
@@ -472,7 +472,7 @@ def _chart_5g_coverage():
         fig.add_trace(go.Bar(
             y=[tier], x=[pct], orientation='h', name=tier,
             marker_color=clr, showlegend=False,
-            text=[f"{pct}%"], textposition="outside",
+            text=[f"{pct}%"], cliponaxis=False, textposition="outside",
             textfont=dict(color=TXT, size=11),
             hovertemplate=f"<b>{tier}</b><br>{pct}% US population<extra></extra>",
         ), row=1, col=2)

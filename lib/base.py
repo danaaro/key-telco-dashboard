@@ -35,7 +35,7 @@ def base_layout(accent, title="", **kw):
         paper_bgcolor=CARD_BG, plot_bgcolor=CARD_BG,
         font=dict(color=TXT, family="'Inter','Segoe UI',Arial,sans-serif", size=12),
         title=dict(text=title, font=dict(size=14, color=TXT), x=0.01, xanchor="left"),
-        margin=dict(l=65, r=50, t=55, b=50),
+        margin=dict(l=65, r=50, t=65, b=50),
         legend=dict(bgcolor="rgba(0,0,0,0)", bordercolor=GRID,
                     borderwidth=1, font=dict(size=11)),
         hoverlabel=dict(bgcolor="#1e293b", font_size=12,

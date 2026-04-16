@@ -135,40 +135,37 @@ def comparison_chart_div(active_carriers_data):
                         subplot_titles=["Service Rev (Q, $B)", "EBITDA Margin %",
                                         "FCF Annual ($B)", "5G Coverage %"])
 
-    for i, (nm, clr, v) in enumerate(zip(names, accents, svc_rev)):
-        fig.add_trace(go.Bar(x=[nm], y=[v], name=nm, marker_color=clr, showlegend=(i == 0),
-                             text=[f"${v:.1f}B"], textposition="outside",
-                             textfont=dict(color=TXT, size=10),
-                             hovertemplate=f"<b>{nm}</b><br>Svc Rev: ${v:.1f}B<extra></extra>"),
-                      row=1, col=1)
-    for i, (nm, clr, v) in enumerate(zip(names, accents, margins)):
-        fig.add_trace(go.Bar(x=[nm], y=[v], name=nm, marker_color=clr, showlegend=False,
-                             text=[f"{v:.1f}%"], textposition="outside",
-                             textfont=dict(color=TXT, size=10),
-                             hovertemplate=f"<b>{nm}</b><br>EBITDA Margin: {v:.1f}%<extra></extra>"),
-                      row=1, col=2)
-    for i, (nm, clr, v) in enumerate(zip(names, accents, fcf)):
-        fig.add_trace(go.Bar(x=[nm], y=[v], name=nm, marker_color=clr, showlegend=False,
-                             text=[f"${v:.1f}B"], textposition="outside",
-                             textfont=dict(color=TXT, size=10),
-                             hovertemplate=f"<b>{nm}</b><br>FCF: ${v:.1f}B<extra></extra>"),
-                      row=1, col=3)
-    for i, (nm, clr, v) in enumerate(zip(names, accents, cov5g)):
-        fig.add_trace(go.Bar(x=[nm], y=[v], name=nm, marker_color=clr, showlegend=False,
-                             text=[f"{v}%"], textposition="outside",
-                             textfont=dict(color=TXT, size=10),
-                             hovertemplate=f"<b>{nm}</b><br>5G Coverage: {v}%<extra></extra>"),
-                      row=1, col=4)
+    def _bar(nm, clr, v, fmt, tip, col, first=False):
+        return go.Bar(x=[nm], y=[v], name=nm, marker_color=clr,
+                      showlegend=False, cliponaxis=False,
+                      text=[fmt.format(v)], textposition="outside",
+                      textfont=dict(color=TXT, size=10),
+                      hovertemplate=f"<b>{nm}</b><br>{tip}<extra></extra>")
 
+    for i, (nm, clr, v) in enumerate(zip(names, accents, svc_rev)):
+        fig.add_trace(_bar(nm, clr, v, "${:.1f}B", f"Svc Rev: ${v:.1f}B", 1), row=1, col=1)
+    for i, (nm, clr, v) in enumerate(zip(names, accents, margins)):
+        fig.add_trace(_bar(nm, clr, v, "{:.1f}%", f"EBITDA Margin: {v:.1f}%", 2), row=1, col=2)
+    for i, (nm, clr, v) in enumerate(zip(names, accents, fcf)):
+        fig.add_trace(_bar(nm, clr, v, "${:.1f}B", f"FCF: ${v:.1f}B", 3), row=1, col=3)
+    for i, (nm, clr, v) in enumerate(zip(names, accents, cov5g)):
+        fig.add_trace(_bar(nm, clr, v, "{}%", f"5G Coverage: {v}%", 4), row=1, col=4)
+
+    # Add 25% headroom above each subgraph max so outside labels aren't clipped
+    def _ymax(vals): return max(vals) * 1.25 if vals else 100
     fig.update_layout(
         paper_bgcolor=CARD_BG, plot_bgcolor=CARD_BG,
         font=dict(color=TXT, family="'Inter','Segoe UI',Arial,sans-serif", size=11),
-        margin=dict(l=30, r=30, t=40, b=30), height=280,
+        margin=dict(l=30, r=30, t=55, b=30), height=320,
         showlegend=False,
         hoverlabel=dict(bgcolor="#1e293b", font_size=11),
     )
     fig.update_xaxes(gridcolor=GRID, zeroline=False, linecolor=GRID, tickfont=dict(size=11))
     fig.update_yaxes(gridcolor=GRID, zeroline=False, linecolor=GRID, tickfont=dict(size=11))
+    fig.update_yaxes(range=[0, _ymax(svc_rev)],  row=1, col=1)
+    fig.update_yaxes(range=[0, _ymax(margins)],  row=1, col=2)
+    fig.update_yaxes(range=[0, _ymax(fcf)],      row=1, col=3)
+    fig.update_yaxes(range=[0, _ymax(cov5g)],    row=1, col=4)
     return pio.to_html(fig, include_plotlyjs=False, full_html=False,
                        div_id="comparison_chart",
                        config={"displayModeBar": False, "responsive": True})
