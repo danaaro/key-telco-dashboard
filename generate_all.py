@@ -79,7 +79,7 @@ def carrier_card(meta, summary):
         margin_str  = f"{margin:.1f}%"   if isinstance(margin,  (int, float)) else "—"
         fcf_str     = f"${fcf:.1f}B"     if isinstance(fcf,     (int, float)) else "N/A"
         subs_str    = f"{subs:.0f}M"     if isinstance(subs,    (int, float)) else "—"
-        cov5g_str   = f"{cov5g}%"        if cov5g != "—" else "—"
+        cov5g_str   = f"{cov5g}%"        if isinstance(cov5g, (int, float)) else "N/A"
         kpi_html = f"""
         <div class="lc-kpis">
           <div class="lc-kpi"><div class="lc-kpi-label">Svc Rev (Q)</div><div class="lc-kpi-val">{svc_rev_str}</div></div>
@@ -134,7 +134,8 @@ def comparison_chart_div(active_carriers_data):
     margins = [d['summary'].get('ebitda_margin') or 0 for d in active_carriers_data]
     fcf_raw = [d['summary'].get('fcf_annual') for d in active_carriers_data]
     fcf     = [v if v is not None else 0 for v in fcf_raw]
-    cov5g   = [d['summary'].get('coverage_5g') or 0 for d in active_carriers_data]
+    cov5g_raw = [d['summary'].get('coverage_5g') for d in active_carriers_data]
+    cov5g     = [v if v is not None else 0 for v in cov5g_raw]
 
     from plotly.subplots import make_subplots
     fig = make_subplots(rows=1, cols=4,
@@ -161,8 +162,15 @@ def comparison_chart_div(active_carriers_data):
                              textfont=dict(color=TXT, size=10),
                              hovertemplate=f"<b>{nm}</b><br>{tip}<extra></extra>"),
                       row=1, col=3)
-    for i, (nm, clr, v) in enumerate(zip(names, accents, cov5g)):
-        fig.add_trace(_bar(nm, clr, v, "{}%", f"5G Coverage: {v}%", 4), row=1, col=4)
+    for i, (nm, clr, v, vr) in enumerate(zip(names, accents, cov5g, cov5g_raw)):
+        lbl = "N/A" if vr is None else f"{v}%"
+        tip = "5G Coverage: N/A (MVNO)" if vr is None else f"5G Coverage: {v}%"
+        fig.add_trace(go.Bar(x=[nm], y=[v], name=nm, marker_color=clr,
+                             showlegend=False, cliponaxis=False,
+                             text=[lbl], textposition="outside",
+                             textfont=dict(color=TXT, size=10),
+                             hovertemplate=f"<b>{nm}</b><br>{tip}<extra></extra>"),
+                      row=1, col=4)
 
     # Add 25% headroom above each subgraph max so outside labels aren't clipped
     def _ymax(vals): return max(vals) * 1.25 if vals else 100

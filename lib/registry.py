@@ -106,6 +106,23 @@ CARRIERS = {
         "latest_q":    "H1 FY2026",   # Vodafone uses Apr-Mar fiscal year
         "phase":       2,
     },
+    "comcast": {
+        "id":          "comcast",
+        "name":        "Comcast",
+        "short":       "CMCSA",
+        "ticker":      "CMCSA",
+        "exchange":    "NASDAQ",
+        "currency":    "USD",
+        "fx_pair":     None,
+        "region":      "Americas",
+        "flag":        "🇺🇸",
+        "accent":      "#0568AE",
+        "status":      "active",
+        "module":      "lib.carriers.comcast",
+        "out_file":    "carriers/comcast.html",
+        "latest_q":    "Q4 2025",
+        "phase":       1,
+    },
     "globe": {
         "id":          "globe",
         "name":        "Globe Telecom",
