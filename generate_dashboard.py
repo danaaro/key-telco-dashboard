@@ -516,6 +516,120 @@ def chart_fcf_capex_quarterly():
     return fig_to_div(fig, "chart_fcf_capex")
 
 # ══════════════════════════════════════════════════════════════════════════════
+#  CHART 9 – 5G Coverage Tiers (population reach by spectrum layer)
+# ══════════════════════════════════════════════════════════════════════════════
+# Sources: T-Mobile newsroom, FCC filings, Q4 2025 earnings
+COVERAGE = dict(
+    tiers   = ["LTE (4G)", "Extended Range 5G<br>(Low-band 600 MHz)",
+               "Ultra Capacity 5G<br>(Mid-band 2.5 GHz)", "5G Advanced<br>(SA Core — US-only)",
+               "mmWave 5G<br>(High-band)"],
+    people  = [325, 325, 300, 290, 50],          # millions of people covered (est.)
+    pct     = [99,  99,  91,  88,  15],           # % US population
+    colors  = [BLU, TEA, MAG, GRN, YLW],
+    notes   = ["Nationwide baseline",
+               "Best building penetration;<br>miles of range",
+               "Achieved Oct 2023,<br>industry-leading mid-band",
+               "Nation's only nationwide<br>standalone 5G core",
+               "Multi-Gbps speeds;<br>dense urban / venues"],
+)
+
+def chart_5g_coverage():
+    fig = make_subplots(rows=1, cols=2,
+                        column_widths=[0.62, 0.38],
+                        specs=[[{"type":"bar"}, {"type":"bar"}]],
+                        subplot_titles=["Population Reach by 5G Tier (Millions)",
+                                        "% US Population Coverage"])
+    # Left: absolute population bars (horizontal)
+    for i, (tier, pop, clr) in enumerate(zip(
+            COVERAGE['tiers'], COVERAGE['people'], COVERAGE['colors'])):
+        fig.add_trace(go.Bar(
+            y=[tier], x=[pop], orientation='h', name=tier,
+            marker_color=clr, showlegend=False,
+            text=[f"{pop}M"], textposition="outside",
+            textfont=dict(color=TXT, size=11),
+            hovertemplate=f"<b>{tier}</b><br>Coverage: {pop}M people ({COVERAGE['pct'][i]}%)<extra></extra>",
+        ), row=1, col=1)
+    # Right: % coverage bars
+    for i, (tier, pct, clr) in enumerate(zip(
+            COVERAGE['tiers'], COVERAGE['pct'], COVERAGE['colors'])):
+        fig.add_trace(go.Bar(
+            y=[tier], x=[pct], orientation='h', name=tier,
+            marker_color=clr, showlegend=False,
+            text=[f"{pct}%"], textposition="outside",
+            textfont=dict(color=TXT, size=11),
+            hovertemplate=f"<b>{tier}</b><br>{pct}% US population<extra></extra>",
+        ), row=1, col=2)
+
+    fig.update_layout(**_base("T-Mobile 5G Network Coverage by Technology Layer"),
+                      height=320, barmode="stack")
+    _apply_axes(fig)
+    fig.update_xaxes(range=[0, 380], row=1, col=1, ticksuffix="M")
+    fig.update_xaxes(range=[0, 115], row=1, col=2, ticksuffix="%")
+    fig.update_yaxes(tickfont=dict(size=10))
+    # US total population reference line
+    fig.add_vline(x=335, line_dash="dot", line_color=MUTED, line_width=1,
+                  annotation_text="US pop. 335M",
+                  annotation_font=dict(color=MUTED, size=9), row=1, col=1)
+    return fig_to_div(fig, "chart_5g_coverage")
+
+# ══════════════════════════════════════════════════════════════════════════════
+#  CHART 10 – Fiber & Fixed Wireless Rollout Roadmap
+# ══════════════════════════════════════════════════════════════════════════════
+# Sources: T-Mobile newsroom (Jun 2025 launch), Capital Markets Day, Q4 2025 earnings
+FIBER_MILESTONES = dict(
+    labels  = ["Q4'22\nStart", "Q4'23", "Q4'24", "Jun'25\nFiber launch",
+               "Metronet\nclose (est.)", "2028\nTarget", "2030\nTarget"],
+    homes_m = [2.6,  4.7,  6.4,   7.0,   9.5,  12.0,  13.5],   # M homes/customers
+    is_proj = [False, False, False, False, True,  True,  True],
+    notes   = ["2.6M FWA<br>customers",
+               "4.7M FWA<br>customers",
+               "6.4M FWA<br>customers",
+               "Fiber hard launch<br>500K homes passed<br>Lumos acquired ($1.45B)",
+               "Metronet pending<br>~2M+ homes<br>19 states",
+               "12M broadband<br>customers target",
+               "12–15M fiber<br>households passed<br>~20% IRR target"],
+)
+
+def chart_fiber_rollout():
+    fig = go.Figure()
+    clr_act = [TEA  if not p else hex_alpha(MAG, 0.45) for p in FIBER_MILESTONES['is_proj']]
+    fig.add_trace(go.Bar(
+        x=FIBER_MILESTONES['labels'],
+        y=FIBER_MILESTONES['homes_m'],
+        name="Homes / Customers (M)",
+        marker_color=clr_act,
+        text=[f"{v:.1f}M" for v in FIBER_MILESTONES['homes_m']],
+        textposition="outside", textfont=dict(size=10, color=TXT),
+        hovertemplate="<b>%{x}</b><br>%{customdata}<extra></extra>",
+        customdata=FIBER_MILESTONES['notes'],
+    ))
+    # Target lines
+    fig.add_hline(y=12.0, line_dash="dot", line_color=MAG, line_width=1.5,
+                  annotation_text="12M broadband target (2028)",
+                  annotation_position="right",
+                  annotation_font=dict(color=MAG, size=10))
+    fig.add_hline(y=13.5, line_dash="dot", line_color=PRP, line_width=1.2,
+                  annotation_text="12–15M fiber HH target (2030)",
+                  annotation_position="right",
+                  annotation_font=dict(color=PRP, size=10))
+    # Fiber launch annotation
+    fig.add_annotation(x="Jun'25\nFiber launch", y=8.5,
+                       text="Fiber launch<br>Jun 5, 2025<br>5-yr price lock",
+                       showarrow=True, arrowhead=2, arrowcolor=GRN,
+                       font=dict(color=GRN, size=9), bgcolor=CARD,
+                       bordercolor=GRN, borderwidth=1)
+    fig.update_layout(**_base("Broadband & Fiber Rollout Roadmap — Homes / Customers"),
+                      height=400)
+    _apply_axes(fig)
+    fig.update_yaxes(title_text="Millions of Homes / Customers", ticksuffix="M", range=[0, 16])
+    # Divider between actual and projected
+    fig.add_vline(x=3.5, line_dash="dash", line_color=MUTED, line_width=1,
+                  annotation_text="  Projected →",
+                  annotation_position="top right",
+                  annotation_font=dict(color=MUTED, size=9))
+    return fig_to_div(fig, "chart_fiber_rollout")
+
+# ══════════════════════════════════════════════════════════════════════════════
 #  HTML ASSEMBLY
 # ══════════════════════════════════════════════════════════════════════════════
 
@@ -819,6 +933,7 @@ def build_html(divs):
   <a href="#revenue">Revenue</a>
   <a href="#financials">Financials</a>
   <a href="#network">Network Domain</a>
+  <a href="#coverage">5G &amp; Fiber</a>
   <a href="#subscribers">Subscribers</a>
   <a href="#capital">Capital</a>
   <a href="#stock">Stock</a>
@@ -900,6 +1015,106 @@ def build_html(divs):
     <span class="dot"></span>Network AI, Software & Technology Initiatives
   </div>
   <div class="init-grid">{init_html}</div>
+</div>
+
+<!-- ── SECTION 4b: COVERAGE & ROLLOUT PLANS ──────────────────────────── -->
+<div class="section" id="coverage">
+  <div class="section-title"><span class="dot"></span>5G Coverage & Fiber Rollout Plans</div>
+  <div class="section-sub">
+    5G network reach by technology layer (population coverage) and broadband/fiber expansion roadmap through 2030.
+    Sources: T-Mobile newsroom, FCC filings, Q4 2025 earnings, Capital Markets Day.
+  </div>
+
+  <!-- 5G Coverage Tiers -->
+  <div class="chart-wrap" style="margin-bottom:16px">
+    {divs['5g_coverage']}
+    <div class="chart-note">
+      Extended Range 5G (low-band 600 MHz): 325M people / 99% US population &nbsp;·&nbsp;
+      Ultra Capacity 5G (mid-band 2.5 GHz): 300M people / 91% — achieved Oct 2023 &nbsp;·&nbsp;
+      5G Advanced: US-first deployment on nation's only standalone 5G core &nbsp;·&nbsp;
+      mmWave: select dense urban markets &amp; venues. US Cellular acquisition (late 2025) extended rural footprint.
+    </div>
+  </div>
+
+  <!-- 5G Technology Cards -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(220px,1fr)); gap:12px; margin-bottom:20px">
+    <div class="kpi-card" style="border-top:3px solid {TEA}">
+      <div class="kpi-label">Extended Range 5G</div>
+      <div class="kpi-value" style="color:{TEA}">325M</div>
+      <div class="kpi-delta" style="color:{MUTED}">99% US population · Low-band 600 MHz</div>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid {MAG}">
+      <div class="kpi-label">Ultra Capacity 5G</div>
+      <div class="kpi-value" style="color:{MAG}">300M</div>
+      <div class="kpi-delta" style="color:{MUTED}">91% US population · Mid-band 2.5 GHz</div>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid {GRN}">
+      <div class="kpi-label">5G Advanced (SA Core)</div>
+      <div class="kpi-value" style="color:{GRN}">Only US</div>
+      <div class="kpi-delta" style="color:{MUTED}">Nation's only nationwide SA 5G core</div>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid {YLW}">
+      <div class="kpi-label">Peak 5G Speed</div>
+      <div class="kpi-value" style="color:{YLW}">6.3 Gbps</div>
+      <div class="kpi-delta" style="color:{MUTED}">Record downlink · 4-carrier aggregation</div>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid {BLU}">
+      <div class="kpi-label">5G Cities Covered</div>
+      <div class="kpi-value" style="color:{BLU}">3,888</div>
+      <div class="kpi-delta" style="color:{MUTED}">Including rural via US Cellular (2025)</div>
+    </div>
+    <div class="kpi-card" style="border-top:3px solid {PRP}">
+      <div class="kpi-label">T-Satellite</div>
+      <div class="kpi-value" style="color:{PRP}">Live</div>
+      <div class="kpi-delta" style="color:{MUTED}">Direct-to-device · No dead zones</div>
+    </div>
+  </div>
+
+  <!-- Fiber Rollout Chart -->
+  <div class="chart-wrap" style="margin-bottom:16px">
+    {divs['fiber_rollout']}
+    <div class="chart-note">
+      Fiber hard launch: June 5, 2025 (500K homes). &nbsp;
+      Lumos acquired $1.45B (Apr 2025). &nbsp;
+      Metronet acquisition pending (~2M+ homes, 19 states). &nbsp;
+      Pricing: $60–$105/mo · 5-year price lock · No contracts. &nbsp;
+      Bars marked * = projected. Source: T-Mobile Newsroom.
+    </div>
+  </div>
+
+  <!-- Fiber details cards -->
+  <div style="display:grid; grid-template-columns:repeat(auto-fill,minmax(260px,1fr)); gap:12px">
+    <div class="init-card" style="border-left:3px solid {GRN}">
+      <div class="init-title" style="margin-bottom:10px">🏠 Fiber Plans &amp; Pricing</div>
+      <ul class="init-bullets">
+        <li><strong>Fiber 500</strong> — 500 Mbps · $60/mo (w/ voice line)</li>
+        <li><strong>Fiber 1 Gig</strong> — 1 Gbps · $75/mo (w/ voice line)</li>
+        <li><strong>Fiber 2 Gig</strong> — 2 Gbps · $90/mo (w/ voice line)</li>
+        <li>No equipment fees · No contracts · Unlimited data</li>
+        <li><strong>5-year price guarantee</strong> (10-yr Founders Club)</li>
+      </ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid {BLU}">
+      <div class="init-title" style="margin-bottom:10px">🌐 Fiber Acquisition Strategy</div>
+      <ul class="init-bullets">
+        <li><strong>Lumos Networks</strong> — $1.45B, closed Apr 2025</li>
+        <li><strong>Metronet</strong> — pending close · 2M+ homes · 19 states</li>
+        <li>Asset-light: leveraging existing fiber infrastructure</li>
+        <li>Target IRR: ~20% on fiber ventures</li>
+        <li>Launch markets: IL, CO, MN, CA, FL, MI, WI, NY</li>
+      </ul>
+    </div>
+    <div class="init-card" style="border-left:3px solid {MAG}">
+      <div class="init-title" style="margin-bottom:10px">📅 Rollout Timeline</div>
+      <ul class="init-bullets">
+        <li><strong>Jun 2025</strong> — Fiber hard launch (500K homes)</li>
+        <li><strong>2025 (H2)</strong> — Metronet close expected</li>
+        <li><strong>2028</strong> — 12M broadband customers</li>
+        <li><strong>2030</strong> — 12–15M fiber households passed</li>
+        <li>Long-term: compete with cable incumbents nationally</li>
+      </ul>
+    </div>
+  </div>
 </div>
 
 <!-- ── SECTION 5: SUBSCRIBERS ───────────────────────────────────────── -->
@@ -996,6 +1211,8 @@ if __name__ == "__main__":
         ("capital",     chart_capital,              "Capital Allocation"),
         ("stock",       chart_stock,                "3-Year Stock Performance"),
         ("fcf_capex",   chart_fcf_capex_quarterly,  "Quarterly FCF vs CapEx"),
+        ("5g_coverage", chart_5g_coverage,           "5G Coverage Tiers"),
+        ("fiber_rollout", chart_fiber_rollout,        "Fiber Rollout Roadmap"),
     ]
     for key, fn, label in steps:
         print(f"  [{steps.index((key,fn,label))+1}/{len(steps)}] {label}…")
