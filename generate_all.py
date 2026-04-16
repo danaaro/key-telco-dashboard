@@ -281,23 +281,23 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 <head>
 <meta charset="UTF-8"/>
 <meta name="viewport" content="width=device-width,initial-scale=1"/>
-<title>Carrier Intelligence Hub — Executive Dashboard</title>
+<title>Key Telco Dashboard — Executive Financial Intelligence</title>
 <script src="https://cdn.plot.ly/plotly-3.0.0.min.js"></script>
 {css}
 </head>
 <body>
 
 <nav>
-  <span class="nav-brand">Carrier <span>Intelligence</span> Hub</span>
-  <span class="nav-muted">Multi-Carrier Executive Financial Dashboard</span>
+  <span class="nav-brand">Key <span>Telco</span> Dashboard</span>
+  <span class="nav-muted">Executive Financial Intelligence</span>
 </nav>
 
 <div class="hero">
   <div class="hero-badge">Executive Strategy Brief</div>
-  <h1>Global Carrier <span>Intelligence</span> Hub</h1>
+  <h1>Key <span>Telco</span> Dashboard</h1>
   <div class="hero-sub">
     Executive financial dashboards for Tier-1/Tier-2 CSPs — Network Domain focus: 5G, Fiber, AI/Software, Venues.
-    Built for Network Software & Services strategy and account management.
+    Built for Network Software &amp; Services strategy and account management.
   </div>
   <div class="hero-meta">
     <span><strong>Active Carriers:</strong> {len(active_data)}</span>
@@ -347,7 +347,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
 #  MAIN
 # ══════════════════════════════════════════════════════════════════════════════
 def main():
-    print("Multi-Carrier Executive Dashboard Generator")
+    print("Key Telco Dashboard — Generator")
     print("=" * 50)
 
     # Import registry
