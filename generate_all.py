@@ -14,7 +14,7 @@ Add a new carrier:
   3. Re-run this script
 """
 
-import sys, os, importlib
+import sys, os, importlib, base64, io
 from datetime import datetime
 
 # Force UTF-8 so emoji/Unicode in print() works on Windows
@@ -25,7 +25,63 @@ if hasattr(sys.stderr, "reconfigure"):
 
 SCRIPT_DIR   = os.path.dirname(os.path.abspath(__file__))
 CARRIERS_DIR = os.path.join(SCRIPT_DIR, "carriers")
+LOGOS_DIR    = os.path.join(SCRIPT_DIR, "Logos")
 GENERATED    = datetime.now().strftime("%B %d, %Y  %H:%M")
+
+# ── Logo file mapping ─────────────────────────────────────────────────────────
+LOGO_FILES = {
+    "tmobile":    "TMUS_original.png",
+    "verizon":    "Verizon_2024.svg",
+    "att":        "AT&T_logo_2016.svg.png",
+    "vmo2":       "VIRGIN_MEDIA_O2_LOGO_SECONDARY_COLOUR_RGB-300x170-1.png",
+    "odido":      "Odido_2023_Logo.png",
+    "vf_germany": "Vodafone_Germany-Logo.wine.png",
+    "comcast":    "Comcast_logo_2000.svg",
+    "globe":      "Globe-logo.png",
+}
+_logo_uri_cache = {}
+
+
+def _logo_data_uri(carrier_id):
+    """Return a base64 data URI for the carrier's logo, resizing PNGs to max 200×60."""
+    if carrier_id in _logo_uri_cache:
+        return _logo_uri_cache[carrier_id]
+
+    fname = LOGO_FILES.get(carrier_id)
+    if not fname:
+        _logo_uri_cache[carrier_id] = None
+        return None
+
+    fpath = os.path.join(LOGOS_DIR, fname)
+    if not os.path.exists(fpath):
+        _logo_uri_cache[carrier_id] = None
+        return None
+
+    # SVG: read as-is, embed as svg+xml
+    if fname.lower().endswith(".svg"):
+        with open(fpath, "rb") as f:
+            data = f.read()
+        b64  = base64.b64encode(data).decode("ascii")
+        uri  = f"data:image/svg+xml;base64,{b64}"
+        _logo_uri_cache[carrier_id] = uri
+        return uri
+
+    # PNG (including .svg.png and .wine.png): resize then encode
+    try:
+        from PIL import Image
+        img = Image.open(fpath).convert("RGBA")
+        img.thumbnail((200, 60), Image.LANCZOS)
+        buf = io.BytesIO()
+        img.save(buf, format="PNG", optimize=True)
+        b64  = base64.b64encode(buf.getvalue()).decode("ascii")
+        uri  = f"data:image/png;base64,{b64}"
+        _logo_uri_cache[carrier_id] = uri
+        return uri
+    except Exception:
+        pass
+
+    _logo_uri_cache[carrier_id] = None
+    return None
 
 # Ensure carriers/ output dir exists
 os.makedirs(CARRIERS_DIR, exist_ok=True)
@@ -56,9 +112,22 @@ def hex_alpha(hex_color, alpha):
 
 
 def logo_chip(meta):
-    """Return a styled carrier logo chip using the carrier's accent color."""
-    accent = meta["accent"]
-    short  = meta.get("short", meta["id"].upper())
+    """Return carrier logo img tag (base64 embedded) or fallback text chip."""
+    accent     = meta["accent"]
+    short      = meta.get("short", meta["id"].upper())
+    carrier_id = meta["id"]
+
+    uri = _logo_data_uri(carrier_id)
+    if uri:
+        # Subtle pill wrapper so logo is visible on the dark card background
+        return (f'<div style="background:rgba(255,255,255,0.07);border-radius:6px;'
+                f'padding:5px 10px;display:inline-flex;align-items:center;'
+                f'border:1px solid rgba(255,255,255,0.10)">'
+                f'<img src="{uri}" alt="{meta["name"]}" '
+                f'style="height:28px;max-width:100px;object-fit:contain;display:block">'
+                f'</div>')
+
+    # Fallback: accent-colored text chip
     r, g, b = [int(accent.lstrip("#")[i:i+2], 16) for i in (0, 2, 4)]
     bg  = f"rgba({r},{g},{b},0.12)"
     bdr = f"rgba({r},{g},{b},0.55)"
