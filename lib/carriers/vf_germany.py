@@ -84,7 +84,7 @@ def get_summary():
         "id":             ID,
         "svc_rev":        round(6.0 * EUR_USD / 2, 1),  # H1 FY2026 annualized quarterly in USD
         "ebitda_margin":  30.0,                           # % H1 FY2026
-        "fcf_annual":     0.0,                            # Germany CapEx/FCF not isolated from Group
+        "fcf_annual":     None,                             # Germany FCF not reported separately from Vodafone Group
         "subscribers":    39.0,                           # M mobile customers
         "coverage_5g":    95,                             # % Germany pop (est.)
         "latest_q":       "H1 FY2026",

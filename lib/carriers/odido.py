@@ -65,7 +65,7 @@ def get_summary():
         "id":             ID,
         "svc_rev":        round(2.38 * EUR_USD / 4, 1),  # FY2025 quarterly equiv in USD
         "ebitda_margin":  38.2,
-        "fcf_annual":     0.0,   # Not publicly disclosed
+        "fcf_annual":     None,  # Private PE-backed — FCF not publicly disclosed
         "subscribers":    3.15,  # M mobile
         "coverage_5g":    86,    # % Netherlands pop
         "latest_q":       "FY2025",

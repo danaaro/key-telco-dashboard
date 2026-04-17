@@ -86,7 +86,7 @@ def get_summary():
         "id":             ID,
         "svc_rev":        round(2.53 * GBP_USD, 1),   # Q2 2025 rev in USD
         "ebitda_margin":  37.2,                         # % Q2 2025
-        "fcf_annual":     round(0.39 * GBP_USD, 1),    # FY2025 FCF in USD
+        "fcf_annual":     None,                             # Private JV — FCF not publicly disclosed
         "subscribers":    23.1,                         # M mobile connections
         "coverage_5g":    87,                           # % UK pop
         "latest_q":       "Q2 2025",

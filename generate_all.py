@@ -55,6 +55,19 @@ def hex_alpha(hex_color, alpha):
     return f"rgba({r},{g},{b},{alpha})"
 
 
+def logo_chip(meta):
+    """Return a styled carrier logo chip using the carrier's accent color."""
+    accent = meta["accent"]
+    short  = meta.get("short", meta["id"].upper())
+    r, g, b = [int(accent.lstrip("#")[i:i+2], 16) for i in (0, 2, 4)]
+    bg  = f"rgba({r},{g},{b},0.12)"
+    bdr = f"rgba({r},{g},{b},0.55)"
+    return (f'<div style="background:{bg};border:1px solid {bdr};color:{accent};'
+            f'border-radius:6px;padding:4px 10px;font-size:11px;font-weight:800;'
+            f'letter-spacing:0.5px;white-space:nowrap;font-family:Inter,sans-serif">'
+            f'{short}</div>')
+
+
 def carrier_card(meta, summary):
     """Render a carrier card for the landing page."""
     accent  = meta["accent"]
@@ -89,7 +102,7 @@ def carrier_card(meta, summary):
           <div class="lc-kpi"><div class="lc-kpi-label">5G Coverage</div><div class="lc-kpi-val">{cov5g_str}</div></div>
         </div>
         <a href="{out_file}" class="lc-btn" style="background:{accent}">View Dashboard &rarr;</a>"""
-        status_badge = f'<span class="lc-badge" style="background:{GRN}">Live</span>'
+        status_badge = logo_chip(meta)
         footer_note  = f'<span>Latest: {latest_q}</span>'
     else:
         phase_colors = {2: YLW, 3: ORG}
@@ -100,7 +113,7 @@ def carrier_card(meta, summary):
           <div style="font-size:13px;font-weight:600;color:{TXT}">Phase {phase} — Coming Soon</div>
           <div style="font-size:11px;color:{MUTED};margin-top:4px">{meta.get('latest_q','')}</div>
         </div>"""
-        status_badge = f'<span class="lc-badge" style="background:{pcol}">Phase {phase}</span>'
+        status_badge = logo_chip(meta)
         footer_note  = f'<span>Planned · {region}</span>'
 
     return f"""
@@ -209,10 +222,37 @@ def build_landing_page(registry, summaries):
     # Build comparison chart from active carriers
     comp_div = comparison_chart_div(active_data)
 
-    # Build carrier cards
-    all_cards = ""
-    for entry in active_data + planned_data:
-        all_cards += carrier_card(entry["meta"], entry["summary"])
+    # Build carrier cards grouped by region
+    REGION_ORDER = [
+        ("Americas", "🌎"),
+        ("Europe",   "🌍"),
+        ("APAC",     "🌏"),
+    ]
+
+    def _cards_for_region(region, entries):
+        cards = [carrier_card(e["meta"], e["summary"])
+                 for e in entries if e["meta"]["region"] == region]
+        return "".join(cards)
+
+    all_entries = active_data + planned_data
+    region_blocks = ""
+    for region_name, region_flag in REGION_ORDER:
+        region_entries = [e for e in all_entries if e["meta"]["region"] == region_name]
+        if not region_entries:
+            continue
+        n_active  = sum(1 for e in region_entries if e["meta"]["status"] == "active")
+        n_total   = len(region_entries)
+        count_str = f"{n_active} active" + (f" · {n_total-n_active} planned" if n_total > n_active else "")
+        cards_html = _cards_for_region(region_name, region_entries)
+        region_blocks += f"""
+<div class="region-section" data-region="{region_name}">
+  <div class="region-header">
+    <span class="rh-dot"></span>
+    <span>{region_flag} {region_name}</span>
+    <span class="rh-count">{count_str}</span>
+  </div>
+  <div class="cards-grid">{cards_html}</div>
+</div>"""
 
     css = f"""
 <style>
@@ -249,8 +289,15 @@ nav{{position:sticky;top:0;z-index:100;background:rgba(10,14,26,0.97);backdrop-f
 .section-title .dot{{width:4px;height:18px;background:{BLU};border-radius:2px}}
 .section-sub{{font-size:12px;color:var(--muted);margin-bottom:14px}}
 .chart-wrap{{background:var(--card);border:1px solid var(--grid);border-radius:12px;padding:4px;overflow:hidden}}
+/* REGIONAL GROUPS */
+.region-section{{padding:0 24px 8px}}
+.region-header{{display:flex;align-items:center;gap:10px;font-size:14px;font-weight:700;
+  color:var(--text);padding:20px 0 12px;border-bottom:1px solid var(--grid);margin-bottom:16px}}
+.region-header .rh-dot{{width:4px;height:18px;background:{BLU};border-radius:2px}}
+.region-header .rh-count{{font-size:11px;font-weight:500;color:var(--muted);
+  background:var(--card);border:1px solid var(--grid);border-radius:12px;padding:2px 8px;margin-left:4px}}
 /* CARRIER CARDS GRID */
-.cards-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;padding:24px}}
+.cards-grid{{display:grid;grid-template-columns:repeat(auto-fill,minmax(320px,1fr));gap:16px;margin-bottom:24px}}
 /* CARRIER CARD */
 .lc-card{{background:var(--card);border:1px solid var(--grid);border-radius:12px;
   padding:20px;transition:border-color .25s,transform .2s;cursor:default}}
@@ -287,8 +334,8 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
     document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
     btn.classList.add('active');
     const region = btn.dataset.region;
-    document.querySelectorAll('.lc-card').forEach(card => {
-      card.style.display = (region === 'all' || card.dataset.region === region) ? '' : 'none';
+    document.querySelectorAll('.region-section').forEach(sec => {
+      sec.style.display = (region === 'all' || sec.dataset.region === region) ? '' : 'none';
     });
   });
 });
@@ -340,7 +387,7 @@ document.querySelectorAll('.filter-btn').forEach(btn => {
   <div class="chart-wrap">{comp_div}</div>
 </div>
 
-<div class="cards-grid">{all_cards}</div>
+{region_blocks}
 
 <footer>
   <strong>Data Sources:</strong>
